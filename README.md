@@ -1,57 +1,61 @@
-# Compensated Open Source License
-A license for compensatated work through revenue sharing using smart contracts.
+# The RHours, Mobile, Business Model
+RHours introduces a mobile, business ownership model. In businesses built using the RHours model, ownership moves through a network of participants over time. As each participant contributes their unique gifts to the combined effort that creates the value of the business, ownership agreements are captured in computable, financial instruments, bound directly to revenue from the market.
+	
+Each RHours business is made of three primary pieces: contributions, revenue, and governance. A contribution is any value brought to the business. Typically, contributions are in the form of human effort, or an asset, like money. RHours contributions are priced at the time they are accepted along with a compensation agreement that captures both the current and future value of the contribution. Future values are based on the risk associated with ultimately receiving full compensation.
 
-Projects which use the Compensated OSS license:
-* Identify a stream of revenue;
-* Accept a liability along with contributive effort to be paid from the revenue stream;
-* May accept investment in the form of loans with both principal and interest to be paid from the revenue stream;
-* Relinquish any copyrights for work which has been compensated;
-* Openly share any source materials for public collaboration and encourage derivative projects which accept the terms of the license; and
-* Specify a form of governance to be used when making decisions concerning stakeholders of the project which clearly defines their rights and obligations.
+Governance of an RHours business is used to represent the interests of holders of any outstanding, uncompensated contributions. Holding an uncompensated contribution entitles the holder to ownership rights. As contributions become fully compensated, ownership rights are removed. It is in this way, that the RHours business model can be described as mobile. This concept of mobility is at the heart of the computational system that inspired the RHours business model called the rho calculus and implemented within the blockchain computer called RChain. 
+	
+## The RHours Market
+Looking forward to a world of many thousands of RHours businesses each with many contributors, we can imagine an active marketplace for RHours revenue contracts. Because an RHours contract is captured in a trusted compute environment like RChain, holders of these contracts can be assured that when revenue is received by the business which accepted the contribution that the holder will receive their share of compensation up to the maximum bound in the contract.
+	
+These contracts are transferrable, creating a secondary market of these revenue bonds which allows holders to sell their contributions before they are fully compensated. This market becomes an instrument for capital investment in RHours businesses. Contributors may offer any portion of their accepted contribution bonds to the market to receive immediate, though patrial, compensation.
+	
+## The Revenue Stream for RHours
+The RHours organization is a business that licenses and supports the RHours business model. The RHours business earns revenue through fees for use of both on-chain and off-chain software, licensing of the business model, business consulting services, and promotion of the model. 
+	
+It is not expected that the RHours business will generate a great deal of revenue compared to the revenue of the many businesses that will license the RHours business model.
+	
+## An RHours Business Lifecycle
+What happens when the last contribution of an RHours business is fully compensated? In a traditional business, one that is not mobile like RHours, this is not a reasonable question. But, an RHours business is semi-autonomous. There can be a last contribution and that contribution can be completely compensated. But, even still, an RHours business might continue to provide value to customers. For example, consider the RHours organization itself. Imagine it takes 10,000 hours of human effort to create the RHours organization. This work would involve tasks like writing legal documents, writing smart contracts, etc. RHours will charge its customers for their use of these items but only until the contributors are fully compensated. If there's nothing left to do and all past contributions have been fully compensated, the RHours value is available to all, free of charge.
+	
+An interesting consequence of this aspect of the RHours model appears when considering versions of software. Today, many software businesses need to continually create new versions with, perhaps, unwanted features in bundles which customers might not want. Using the RHours model, once the contributions which created a particular version are fully compensated, that version is now free along with the source code which created it. Because of this, a group of investors, contributors, and customers could group together to develop a small point release of the software which addresses only the concerns they have with the free version. They will pay for the fixes and desired enhancements but will not have to pay for unwanted features.
 
-_**NOTE**: This license is a work in progress and has **NOT** been reviewed by **ANY** legal professionals. Do **NOT** use this license other than under your own risk and for the purposes of experimentation._
+## Building the RHours Organization
+RHours is, itself, an RHours business. It is currently a one person operation with two occasional contributors. RHours is currently accepting contributions at 125% of a contributor's normal hourly compensation demonstrated from previous work along with a 10x interest incentive. For example, if a person usually makes $100 per hour then RHours will accept their contribution at $125 per hour resulting in a $1,250 debt to be paid from future RHours revenue (when there is some). The 10x interest incentive is available for a limited time and will be reduced as participation in the project increases.
+	
+Contributions are not immediately accepted. All contributions must be approved in advance by RHours governance which, right now, is one person, the founder, Glen Braun. Note too that RHours is only established as a d.b.a. of an LLC owned by Glen. It has no formal documents or procedures yet to accept contributions and they are not yet being recorded on a blockchain. RHours is in its infancy. Establishing itself legally and putting effective procedures in place to support contributors is RHours' first priority.
+	
+To become a viable business on a firm legal standing, RHours is looking for the types of contributions any startup would need. A must have requirement for any contributors is an understanding, acceptance, and desire to promote the RHours business model.
+	
+### Contributions Wanted
+While it may be that many modern businesses are fairly dynamic, an RHours business exists with a continually shifting ownership. RHours needs legal contributors to assist with forming and operating this new type of business.
+		
+RHours is looking for these contributions. Initial founders receive their normal hourly wage and a 10x interest incentive. This offer is available for a limited time.
 
-# How the License Works
-The Compensated OSS license is part of a larger vision for a revenue sharing business model intended for use on consensus-based compute platforms such as RChain or Ethereum. While it isn't absolutely necessary to use a smart contracting system with the capability of sending and receiving value through code, it is a helpful framework to understand how the model works.
+* LLC Operating Agreement
+	* Right now RHours is formed as a d.b.a. arm of Glen's personal LLC, called LP4-3, LLC. Assuming an LLC is the right form for RHours, an operating agreement is needed which explains the rights of contributors, governance procedures, etc.
+	* More generally, any business that uses the RHours model (these are clients of RHours the organization) also need operating agreements, which instill the RHours model into their business. RHours will supply guidance on what would allow another business to use the RHours brand.
+	* Securities guidance. When contributors give their time or money to an RHours project, if their contribution is not immediately compensated, then that compensation is taken as a loan that is promised to be paid through a smart contract from revenue. This is a debt instrument and is an investment made by the contributor into the business using the RHours business model. Is this a security? It is assumed that a business can have many partners who bring their contributions either in the form of capital or effort.
+* Compensated Open Source License
+	* Open source licenses use copyright law to stipulate the rules of sharing of copyrighted material. The RHours compensated open source model works similarly. It supports freedom of creative works but requires compensation for use. It requires public transparency, provided by blockchain computer systems, of the contributions and their status of compensation. Also, once a contribution is fully compensated, the creative contribution is released, freely to the public. RHours needs legal assistance with drafting this open source copyright license. The license itself will be held under copyright and will be licensed for use by businesses using the RHours model.
+	* A contributor license agreement (CLA). Business that use the RHours model will be paying contributors out of the business' revenue. When accepting a contribution, these companies must ensure that the contributions they receive are truly the personal work of the contributor and that the contributor has the right to their work. If the contributor is under an employee agreement they might have, for example, signed a waiver of their rights to their intellectual property. Also, there are policies of the RHours model which contributors must agree. These need to be within the CLA.
+* Tax Law Advice
+	* RHours needs tax law advice
+	* What tax obligations will an RHours business have? 
+	* What are taxable events for RHours contributors?
+	* Contributions can come from citizens of virtually any country in the world. What country-specific rules apply?
+	
+* Accounting and Profession Services
+	* RHours needs general accounting services to set up an accounting system. 
+	* RHours developers will create the smart contracts needed for the system, but an accounting professional is needed to properly account for payments and integrate the smart contract results with the accounting reporting needs.
 
-![Contract as a License](LicenseDiagram.png )
-
-## The Revenue Stream
-The license is intended for projects that require some form of payment for use of its products or services. As revenue is brought into the project it is distributed to those who hold liabilities against the project, for example, people who have provided work, or funding through loans, or other expenses. 
-    
-## Accept Work along with a Compensation Agreement
-When collaborators do work which is accepted by the project (e.g. when accepting a pull request), then the project also accepts a change to its rules, potentially coded in a smart contract, for how revenue is distributed. In the simplest case, a project might include a single liability: an agreement to pay the project author X amount. All revenue would be transferred to the project author until the amount is payed, at which point the project would become free to use. Of course, real projects are made from many contributions so the policies for how the revenue contracts may be modified are covered under the project's governance.
-
-The project's policies for accepting a compensation agreement must hold each contributer accountable for both the positive and negative outcomes of our actions. When contributors to a project produce something of value, the project must accept a liability, an agreement to share in the proceeds of the organization. For projects with an established revenue stream, this payment could be immediate, or settled in a short time with near term revenue. For startup projects, the liability might remain for years and perhaps never be met because of a lack of revenue. For long term liabilities, the project should agree to the value of the work and also to terms for payment, including interest to be paid from potential future revenue. This contract may be transferable, allowing a worker to sell their work to someone else.
-
-An individual who collaborates with a project must also accept a portion of the risk of any potential liabilities of the project. Options for individual collaborators include but are not limited to forming an LLC and purchasing private insurance or, working with a project's governance to purchase liability insurance for all contributors.
-
-## Accepting Loans
-Parties can participate in the project by bringing capital in the form of a loan. The process for accepting a loan is similar to accepting a compensation agreement in that the revenue smart contracts are modified to include the payment terms of the loan. The proceeds of the loan are disbursed based on the project's governance policies. This might include payment of compensation, payment of expenses, purchasing of equipment, etc.
-
-## Relinquishing Copyrights for Compensated Work
-For work which has not yet been compensated, any project which would create a derived work (e.g. a fork) must agree to terms of collecting revenue and sharing that revenue with the source project until its liabilities (up to the point of the fork) are paid, by a combination of revenue from the source project and the derived project. Once liabilities are paid, the project is made available similar to any other open source project and is free to be used. It is acceptable for a project to include changes to the revenue contracts when receiving revenue from customers (e.g. a 50% split between paying off the projects liabilities and accepting a new liability on behalf of the customer). This provides a way for early customers to share the cost of development with customers who come later.
-
-## Sharing Source Materials
-The goal of the license is to create a means for openly collaborative yet compensated work. The barriers for entry to collaborate on the project should be kept as low as possible with a goal of meeting the same ease of collaboration as is found with open source projects today. People who would like to take the project in a different direction should be free to, but they must work to come to a good faith agreement to generate revenue from their work to compensate any previous work they are building from.
-
-## Project Governance
-The project must clearly state the rights of all stakeholders and the process which project-related decisions are made. No specific forms of governance are required, but it is expected that effective forms of governance will emerge from the use of smart-contract-defined processes. At a minimum, the project must state policies and procedures for these events:
-* The process for accepting work
-* The process of pricing / accepting revenue and how it will be disbursed
-* The policy and process for accepting loans (or not) and how the proceeds of the loan are disbursed
-* The policy and process for negotiating revenue sharing agreements with derivative projects
-* A statement of liability and potential risks associated with participating with the project
-* A statement of applicable jurisdiction and other statements to meet any legal obligations
-
-_**NOTE**: This license is a work in progress and has **NOT** been reviewed by **ANY** legal professionals. Do **NOT** use this license other than under your own risk and for the purposes of experimentation._
-
-# Cooperative Decentralized Organizations
-Before mass and digital communications, it was natural to consider an organization as residing at a physical place like a farm, a shop, or a factory. People gathered there to work together to make a product or service to be offered at the market. Because of the organization's physical presence, the social conventions of physical property ownership were projected onto the organization. Those who owned the property rights to the land that was farmed, or the plot where the shop or factory sat, it was assumed, should not only command the operation of the work but should also determine how the proceeds be divided. We see this today in the nearly universal practice of owners setting a fixed price for labor in terms of an annual salary or hourly wage, with the remainder of the revenue, minus non-labor expenses, taken as profit.
-
-Today, organizations exist which are mostly virtual, not tied to any physical location, and operate globally. What binds them together is a shared governance, an agreement to work together to produce something of value and to share the proceeds. An increasing number of these organizations are constructed primarily out of software, and these software defined, virtual companies provide an increasing number of services which are replacing their physically rooted counterparts. There are, for example, online marketplaces for short-term lodging which compete effectively with traditional hotels, or marketplaces for on-demand transportation replacing city taxi services.
-
-As the value in organizations is captured within the combination of software code and the network of people who use it, it's natural to question if the projection of physical property rights is still a fitting metaphor. It becomes even more questionable when considering the new, decentralized compute platforms which are emerging. Consensus based compute platforms like Ethereum and RChain, running on a globally distributed network of compute nodes, provide a secure, public compute utility where not only is the computer hardware not owned, leased, or rented as they would be under traditional organizational structures but the code, component by component, can earn its own keep, if you will, by charging for its own execution.
-
-These consensus-based compute platforms, due to the very high level of trust they establish, have changed the language that software developers use to describe their work, from the term "program" to "contract". These systems are in their very early stages of adoption but are already transacting $$ of value in simple value trade contracts. Innovative platforms using more expressive contracting languages, such as Rholang on the RChain platform, will enable the creation of organizations defined with an increasingly sophisticated, interdependent collection of computable contractual agreements. The scope of these contracts will quickly expand beyond simple financial transactions to include formally coded procedures for human processes like adding new workers, compensation, planning, etc. If you change the code, you'll change the organization. 
+* Founders Life-Support
+	* Right now, the RHours founder is unemployed and funding his work from personal savings. This can't go on forever. 
+	* The two occasional contributors are in a similar position.
+	* Because the RHours organization is using the RHours model itself, these founding contributions can be offered for sale to supportive investors. A promise of some monthly/yearly budget which these founders can expect to sell their contributions would provide the support needed to continue the work on RHours.
+	
+* Funding for Initial RHours Projects
+	* The RHours organization will not generate considerable revenue compared with the companies which use the RHours business model.
+	* Any business idea which would have an expectation of generating revenue is a potential customer of the RHours model.
+	* To develop and prove out the RHours model, some number of initial customers are required. These projects will need funding by investors who are comfortable and supportive of the RHours business model. Like the RHours organization itself, these projects will offer a 10x return to initial contributors.
 
