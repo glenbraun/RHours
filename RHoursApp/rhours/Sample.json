@@ -1,0 +1,38 @@
+﻿{
+    "RHoursVersion": "RHours 2018-07-16",
+    "RevenueEndPoint": "RHours Project",
+    "Contributor": "Joshy Orndorff",
+    "Terms": {
+        "RatePerHour": 100.0,
+        "Unit": "USD",
+        "InterestRate": "100%",
+        "MaxReturn": "10x"
+    },
+    "Spans": [
+        {
+            "StartDate": "2018-07-04",
+            "EndDate": "2018-07-04",
+            "Events": [
+                {
+                    "Hours": 1.0,
+                    "Description": "Meeting with Jake and Glen. Discussed economics, branding, implementation"
+                },
+                {
+                    "Hours": 1.0,
+                    "Description": "Coding on solidity contract"
+                }
+            ]
+        },
+        {
+            "StartDate": "2018-07-11",
+            "EndDate": "2018-07-11",
+            "Events": [
+                {
+                    "Hours": 1.5,
+                    "Description": "Meeting with Jake and Glen. Discusses ideology, law, abstraction."
+                }
+
+            ]
+        }
+    ]
+}
