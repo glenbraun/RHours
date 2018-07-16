@@ -39,6 +39,8 @@ let ReadCommands (defs: CommandDefinition list) =
 let internal data = 
     {
         Projects = [];
+        Contributors = [];
+        ContributionSpans = [];
     }
 
 let rec ProjectAdd (parts: string list) =
@@ -66,7 +68,7 @@ and ProjectDelete (parts: string list) =
 
     ReadCommands RHoursCommands
 
-and ProjectsShow (parts: string list) =
+and ProjectList (parts: string list) =
     printfn "Projects: %A" data.Projects
     ReadCommands RHoursCommands
 
@@ -84,13 +86,63 @@ and Project (parts: string list) =
                 Execute = ProjectDelete;
             };
             {
-                CommandText = "show";
-                HelpText = "Shows the project lists";
-                Execute = ProjectsShow;
+                CommandText = "list";
+                HelpText = "Shows the project list";
+                Execute = ProjectList;
             };
         ]
     ParseLine subcommands parts
     
+and ContributorAdd (parts: string list) =
+    printfn "Contributor Add %A" parts
+    match parts with
+    | [ id; name] ->
+        match (data.AddContributor(id, name)) with
+        | Some(err) -> printfn "%s" err
+        | None -> ()
+    | _ ->
+        printfn "Expected id and name"
+
+    ReadCommands RHoursCommands
+
+and ContributorDelete (parts: string list) =
+    printfn "Contributor Delete %A" parts
+
+    match parts with
+    | [ id ] ->
+        match data.DeleteContributor(id) with
+        | Some(err) -> printfn "%s" err
+        | None -> ()
+    | _ ->
+        printfn "Expected id"
+
+    ReadCommands RHoursCommands
+
+and ContributorList (parts: string list) =
+    printfn "Contributors: %A" data.Contributors
+    ReadCommands RHoursCommands
+
+and Contributor (parts: string list) =
+    let subcommands = 
+        [
+            {
+                CommandText = "add";
+                HelpText = "Add a contributor";
+                Execute = ContributorAdd;
+            };
+            {
+                CommandText = "delete";
+                HelpText = "Delete a contributor";
+                Execute = ContributorDelete;
+            };
+            {
+                CommandText = "list";
+                HelpText = "Shows the contributor list";
+                Execute = ContributorList;
+            };
+        ]
+    ParseLine subcommands parts
+
 and Exit (parts: string list) =
     printfn "%A" data
 
@@ -98,6 +150,11 @@ and Exit (parts: string list) =
 
 and RHoursCommands = 
     [
+        {
+            CommandText = "contributor";
+            HelpText = "Contributor command";
+            Execute = Contributor;
+        };
         {
             CommandText = "project";
             HelpText = "Project command";
