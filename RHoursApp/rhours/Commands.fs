@@ -32,13 +32,42 @@ and ReadCommand (defs: CommandDefinition list) =
     
 let ReadCommands (defs: CommandDefinition list) =
     ReadCommand defs
- 
+
+
+
+
+let internal data = 
+    {
+        Projects = [];
+    }
+
 let rec ProjectAdd (parts: string list) =
     printfn "Project Add %A" parts
+    match parts with
+    | [ id; name] ->
+        match (data.AddProject(id, name)) with
+        | Some(err) -> printfn "%s" err
+        | None -> ()
+    | _ ->
+        printfn "Expected id and name"
+
     ReadCommands RHoursCommands
 
 and ProjectDelete (parts: string list) =
     printfn "Project Delete %A" parts
+
+    match parts with
+    | [ id ] ->
+        match data.DeleteProject(id) with
+        | Some(err) -> printfn "%s" err
+        | None -> ()
+    | _ ->
+        printfn "Expected id"
+
+    ReadCommands RHoursCommands
+
+and ProjectsShow (parts: string list) =
+    printfn "Projects: %A" data.Projects
     ReadCommands RHoursCommands
 
 and Project (parts: string list) =
@@ -54,10 +83,17 @@ and Project (parts: string list) =
                 HelpText = "Delete a project";
                 Execute = ProjectDelete;
             };
+            {
+                CommandText = "show";
+                HelpText = "Shows the project lists";
+                Execute = ProjectsShow;
+            };
         ]
     ParseLine subcommands parts
     
 and Exit (parts: string list) =
+    printfn "%A" data
+
     printfn "Exit"
 
 and RHoursCommands = 

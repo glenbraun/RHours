@@ -22,7 +22,6 @@ let main argv =
 
     //let x = ParseJsonFromFile @"C:\Projects\RChain\RHours\glenbraun\RHours\RHoursApp\rhours\Sample.json"
 
-    let x = ReadCommands RHoursCommands
+    ReadCommands RHoursCommands
 
-    printfn "Hello World from F#! %A" x
     0 // return an integer exit code
