@@ -22,6 +22,6 @@ let main argv =
 
     //let x = ParseJsonFromFile @"C:\Projects\RChain\RHours\glenbraun\RHours\RHoursApp\rhours\Sample.json"
 
-    ReadCommands RHoursCommands
+    RunRHoursMenu()
 
     0 // return an integer exit code

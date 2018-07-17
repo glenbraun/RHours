@@ -10,32 +10,41 @@ type CommandDefinition =
         Execute: (string list -> unit)
     }
 
+type CommandState =
+    {
+        mutable Name: string;
+        mutable Defs: CommandDefinition list;
+        mutable Other: obj;
+    }
+
 let internal SplitLine (line:string) =
     Array.toList (line.Split(' '))
 
-let rec internal ParseLine (defs: CommandDefinition list) (parts: string list) =
+let rec internal ParseLine (state: CommandState) (parts: string list) =
     match parts with
     | [ ] -> 
-        ReadCommand defs
+        ReadCommand state
     | h :: t -> 
-        match (defs |> List.tryFind (fun c -> c.CommandText = h)) with
+        match ((state.Defs) |> List.tryFind (fun c -> c.CommandText = h)) with
         | Some(cmd) -> 
             (cmd.Execute) t
         | None ->
             printfn "Expected something else"
-            ReadCommand defs
+            ReadCommand state
 
-and ReadCommand (defs: CommandDefinition list) =
+and ReadCommand (state: CommandState) =
+    printfn "%s Menu" (state.Name)
+    printf "    "
+
+    let length = (state.Defs) |> List.length
+    (state.Defs) |> List.iteri (fun i cmd -> printf "%s%s" (cmd.CommandText) (if i < length - 1 then ", " else ""))
+    printfn ""
+    printf "> "
+
     let line = Console.ReadLine()
     let parts = SplitLine line    
-    ParseLine defs parts
+    ParseLine state parts
     
-let ReadCommands (defs: CommandDefinition list) =
-    ReadCommand defs
-
-
-
-
 let internal data = 
     {
         Projects = [];
@@ -43,7 +52,14 @@ let internal data =
         ContributionSpans = [];
     }
 
-let rec ProjectAdd (parts: string list) =
+let internal state = 
+    {
+        Name = "Main";
+        Defs = [];
+        Other = null;
+    }
+
+let rec internal ProjectAdd (parts: string list) =
     printfn "Project Add %A" parts
     match parts with
     | [ id; name] ->
@@ -53,7 +69,7 @@ let rec ProjectAdd (parts: string list) =
     | _ ->
         printfn "Expected id and name"
 
-    ReadCommands RHoursCommands
+    ReadCommand state
 
 and ProjectDelete (parts: string list) =
     printfn "Project Delete %A" parts
@@ -66,14 +82,15 @@ and ProjectDelete (parts: string list) =
     | _ ->
         printfn "Expected id"
 
-    ReadCommands RHoursCommands
+    ReadCommand state
 
 and ProjectList (parts: string list) =
     printfn "Projects: %A" data.Projects
-    ReadCommands RHoursCommands
+    ReadCommand state
 
 and Project (parts: string list) =
-    let subcommands = 
+    state.Name <- "Project"
+    state.Defs <- 
         [
             {
                 CommandText = "add";
@@ -90,8 +107,19 @@ and Project (parts: string list) =
                 HelpText = "Shows the project list";
                 Execute = ProjectList;
             };
+            {
+                CommandText = "back";
+                HelpText = "Moves back to the main menu";
+                Execute = MainMenu;
+            };
+            {
+                CommandText = "exit";
+                HelpText = "Exit command";
+                Execute = Exit;
+            };
         ]
-    ParseLine subcommands parts
+    
+    ParseLine state parts
     
 and ContributorAdd (parts: string list) =
     printfn "Contributor Add %A" parts
@@ -103,7 +131,7 @@ and ContributorAdd (parts: string list) =
     | _ ->
         printfn "Expected id and name"
 
-    ReadCommands RHoursCommands
+    ReadCommand state
 
 and ContributorDelete (parts: string list) =
     printfn "Contributor Delete %A" parts
@@ -116,14 +144,15 @@ and ContributorDelete (parts: string list) =
     | _ ->
         printfn "Expected id"
 
-    ReadCommands RHoursCommands
+    ReadCommand state
 
 and ContributorList (parts: string list) =
     printfn "Contributors: %A" data.Contributors
-    ReadCommands RHoursCommands
+    ReadCommand state
 
 and Contributor (parts: string list) =
-    let subcommands = 
+    state.Name <- "Contributor"
+    state.Defs <- 
         [
             {
                 CommandText = "add";
@@ -140,30 +169,48 @@ and Contributor (parts: string list) =
                 HelpText = "Shows the contributor list";
                 Execute = ContributorList;
             };
+            {
+                CommandText = "back";
+                HelpText = "Moves back to the main menu";
+                Execute = MainMenu;
+            };
+            {
+                CommandText = "exit";
+                HelpText = "Exit command";
+                Execute = Exit;
+            };
         ]
-    ParseLine subcommands parts
+
+    ParseLine state parts
 
 and Exit (parts: string list) =
     printfn "%A" data
-
     printfn "Exit"
 
-and RHoursCommands = 
-    [
-        {
-            CommandText = "contributor";
-            HelpText = "Contributor command";
-            Execute = Contributor;
-        };
-        {
-            CommandText = "project";
-            HelpText = "Project command";
-            Execute = Project;
-        };
-        {
-            CommandText = "exit";
-            HelpText = "Exit command";
-            Execute = Exit;
-        };
-    ]
+and MainMenu (parts: string list) =
+    let subcommands = 
+        [
+            {
+                CommandText = "contributor";
+                HelpText = "Contributor command";
+                Execute = Contributor;
+            };
+            {
+                CommandText = "project";
+                HelpText = "Project command";
+                Execute = Project;
+            };
+            {
+                CommandText = "exit";
+                HelpText = "Exit command";
+                Execute = Exit;
+            };
+        ]
 
+    state.Name <- "Main"
+    state.Defs <- subcommands
+        
+    ReadCommand state
+
+let RunRHoursMenu() =
+    MainMenu []
