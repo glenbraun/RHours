@@ -59,36 +59,7 @@ let internal state =
         Other = null;
     }
 
-let rec internal ProjectAdd (parts: string list) =
-    printfn "Project Add %A" parts
-    match parts with
-    | [ id; name] ->
-        match (data.AddProject(id, name)) with
-        | Some(err) -> printfn "%s" err
-        | None -> ()
-    | _ ->
-        printfn "Expected id and name"
-
-    ReadCommand state
-
-and ProjectDelete (parts: string list) =
-    printfn "Project Delete %A" parts
-
-    match parts with
-    | [ id ] ->
-        match data.DeleteProject(id) with
-        | Some(err) -> printfn "%s" err
-        | None -> ()
-    | _ ->
-        printfn "Expected id"
-
-    ReadCommand state
-
-and ProjectList (parts: string list) =
-    printfn "Projects: %A" data.Projects
-    ReadCommand state
-
-and Project (parts: string list) =
+let rec internal Project (parts: string list) =
     state.Name <- "Project"
     state.Defs <- 
         [
@@ -120,12 +91,12 @@ and Project (parts: string list) =
         ]
     
     ParseLine state parts
-    
-and ContributorAdd (parts: string list) =
-    printfn "Contributor Add %A" parts
+
+and ProjectAdd (parts: string list) =
+    printfn "Project Add %A" parts
     match parts with
     | [ id; name] ->
-        match (data.AddContributor(id, name)) with
+        match (data.AddProject(id, name)) with
         | Some(err) -> printfn "%s" err
         | None -> ()
     | _ ->
@@ -133,12 +104,12 @@ and ContributorAdd (parts: string list) =
 
     ReadCommand state
 
-and ContributorDelete (parts: string list) =
-    printfn "Contributor Delete %A" parts
+and ProjectDelete (parts: string list) =
+    printfn "Project Delete %A" parts
 
     match parts with
     | [ id ] ->
-        match data.DeleteContributor(id) with
+        match data.DeleteProject(id) with
         | Some(err) -> printfn "%s" err
         | None -> ()
     | _ ->
@@ -146,10 +117,10 @@ and ContributorDelete (parts: string list) =
 
     ReadCommand state
 
-and ContributorList (parts: string list) =
-    printfn "Contributors: %A" data.Contributors
+and ProjectList (parts: string list) =
+    printfn "Projects: %A" data.Projects
     ReadCommand state
-
+    
 and Contributor (parts: string list) =
     state.Name <- "Contributor"
     state.Defs <- 
@@ -183,6 +154,68 @@ and Contributor (parts: string list) =
 
     ParseLine state parts
 
+and ContributorAdd (parts: string list) =
+    printfn "Contributor Add %A" parts
+    match parts with
+    | [ id; name] ->
+        match (data.AddContributor(id, name)) with
+        | Some(err) -> printfn "%s" err
+        | None -> ()
+    | _ ->
+        printfn "Expected id and name"
+
+    ReadCommand state
+
+and ContributorDelete (parts: string list) =
+    printfn "Contributor Delete %A" parts
+
+    match parts with
+    | [ id ] ->
+        match data.DeleteContributor(id) with
+        | Some(err) -> printfn "%s" err
+        | None -> ()
+    | _ ->
+        printfn "Expected id"
+
+    ReadCommand state
+
+and ContributorList (parts: string list) =
+    printfn "Contributors: %A" data.Contributors
+    ReadCommand state
+
+and ContributionSpan (parts: string list) =
+    state.Name <- "Contribution Span"
+    state.Defs <- 
+        [
+            {
+                CommandText = "add";
+                HelpText = "Add a contribution span";
+                Execute = ContributorAdd;
+            };
+            {
+                CommandText = "delete";
+                HelpText = "Delete a contributor";
+                Execute = ContributorDelete;
+            };
+            {
+                CommandText = "list";
+                HelpText = "Shows the contributor list";
+                Execute = ContributorList;
+            };
+            {
+                CommandText = "back";
+                HelpText = "Moves back to the main menu";
+                Execute = MainMenu;
+            };
+            {
+                CommandText = "exit";
+                HelpText = "Exit command";
+                Execute = Exit;
+            };
+        ]
+
+    ParseLine state parts
+
 and Exit (parts: string list) =
     printfn "%A" data
     printfn "Exit"
@@ -190,6 +223,11 @@ and Exit (parts: string list) =
 and MainMenu (parts: string list) =
     let subcommands = 
         [
+            {
+                CommandText = "span";
+                HelpText = "Contribution Span command";
+                Execute = ContributionSpan;
+            };
             {
                 CommandText = "contributor";
                 HelpText = "Contributor command";

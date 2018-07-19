@@ -18,6 +18,7 @@ type HourlyWithCompoundedInterestAndMaxTerm =
     {
         Hours: decimal;
         HourlyRate: decimal;
+        Token: string;
         Interest: decimal;
         MaxMultiplier: decimal;
     }
@@ -25,6 +26,7 @@ type HourlyWithCompoundedInterestAndMaxTerm =
 type CashWithCompoundedInterestAndMaxTerm = 
     {
         Amount: decimal;
+        Token: string;
         Interest: decimal;
         MaxMultiplier: decimal;
     }
@@ -36,7 +38,8 @@ type ContributionTerm =
 type Contribution =
     {
         Id: string;
-        Terms: ContributionTerm;
+        Term: ContributionTerm;
+        Claims: string list;
     }
 
 type ContributionSpan =
@@ -45,6 +48,7 @@ type ContributionSpan =
         ContributorId: string;
         StartDate: DateTime;
         EndDate: DateTime;
+        UtcOffset: float;
         Contributions: Contribution list;
     }
 
@@ -105,6 +109,7 @@ type RHoursData =
                             ContributorId = contributorId;
                             StartDate = startDate;
                             EndDate = endDate;
+                            UtcOffset = 0.0;
                             Contributions = [];
                         }
 

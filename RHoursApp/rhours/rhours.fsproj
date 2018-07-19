@@ -12,6 +12,7 @@
     <Compile Include="Lexing.fs" />
     <Compile Include="Parsing.fs" />
     <Compile Include="Json.fs" />
+    <Compile Include="JsonSerialization.fs" />
     <Compile Include="JsonParser.fs" />
     <Compile Include="JsonLexer.fs" />
     <Compile Include="Data.fs" />

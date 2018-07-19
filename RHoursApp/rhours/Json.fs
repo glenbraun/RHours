@@ -47,6 +47,8 @@ type JsonWriter (tw:TextWriter, depthOpt:int option) =
 
     member this.WriteFloat(value:float) = 
         tw.Write(value)
+        if value = float(int(value)) then
+            tw.Write(".0")
 
     member this.WriteString(s:string) =
         // todo: better json encoding of string

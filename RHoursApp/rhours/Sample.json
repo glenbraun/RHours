@@ -1,37 +1,113 @@
 ﻿{
-    "RHoursVersion": "RHours 2018-07-16",
-    "RevenueEndPoint": "RHours Project",
-    "Contributor": "Joshy Orndorff",
-    "Terms": {
-        "RatePerHour": 100.0,
-        "Unit": "USD",
-        "InterestRate": "100%",
-        "MaxReturn": "10x"
-    },
-    "Spans": [
+    "Projects": [
         {
-            "StartDate": "2018-07-04",
-            "EndDate": "2018-07-04",
-            "Events": [
+            "Id": "rhours",
+            "Name": "RHours"
+        }
+    ],
+    "Contributors": [
+        {
+            "Id": "glen",
+            "Name": "Glen"
+        },
+        {
+            "Id": "jake",
+            "Name": "Jake"
+        },
+        {
+            "Id": "joshy",
+            "Name": "Joshy"
+        }
+    ],
+    "ContributionSpans": [
+        {
+            "ProjectId": "rhours",
+            "ContributorId": "joshy",
+            "StartDate": "2018-07-04T00:00:00.0000000",
+            "EndDate": "2018-07-05T00:00:00.0000000",
+            "UtcOffset": 4.0,
+            "Contributions": [
                 {
-                    "Hours": 1.0,
-                    "Description": "Meeting with Jake and Glen. Discussed economics, branding, implementation"
+                    "Id": "1",
+                    "Term": {
+                        "Type": "HourlyWithCompoundedInterestAndMaxTerm",
+                        "Items": [
+                            {
+                                "Hours": 1.0,
+                                "HourlyRate": 100.0,
+                                "Token": "USD",
+                                "Interest": 1.0,
+                                "MaxMultiplier": 10.0
+                            }
+                        ]
+                    },
+                    "Claims": [ "Meeting with Jake and Glen.", "Discussed economics, branding, implementation." ]
                 },
                 {
-                    "Hours": 1.0,
-                    "Description": "Coding on solidity contract"
+                    "Id": "2",
+                    "Term": {
+                        "Type": "HourlyWithCompoundedInterestAndMaxTerm",
+                        "Items": [
+                            {
+                                "Hours": 1.0,
+                                "HourlyRate": 100.0,
+                                "Token": "USD",
+                                "Interest": 1.0,
+                                "MaxMultiplier": 10.0
+                            }
+                        ]
+                    },
+                    "Claims": [ "Coding on solidity contract" ]
                 }
             ]
         },
         {
-            "StartDate": "2018-07-11",
-            "EndDate": "2018-07-11",
-            "Events": [
+            "ProjectId": "rhours",
+            "ContributorId": "joshy",
+            "StartDate": "2018-07-11T00:00:00.0000000",
+            "EndDate": "2018-07-12T00:00:00.0000000",
+            "UtcOffset": 5.0,
+            "Contributions": [
                 {
-                    "Hours": 1.5,
-                    "Description": "Meeting with Jake and Glen. Discusses ideology, law, abstraction."
+                    "Id": "1",
+                    "Term": {
+                        "Type": "HourlyWithCompoundedInterestAndMaxTerm",
+                        "Items": [
+                            {
+                                "Hours": 1.5,
+                                "HourlyRate": 100.0,
+                                "Token": "USD",
+                                "Interest": 1.0,
+                                "MaxMultiplier": 10.0
+                            }
+                        ]
+                    },
+                    "Claims": [ "Meeting with Jake and Glen.", "Discussed ideology, law, abstraction." ]
                 }
-
+            ]
+        },
+        {
+            "ProjectId": "rhours",
+            "ContributorId": "jake",
+            "StartDate": "2018-07-03T00:00:00.0000000",
+            "EndDate": "2018-07-04T00:00:00.0000000",
+            "UtcOffset": 7.0,
+            "Contributions": [
+                {
+                    "Id": "1",
+                    "Term": {
+                        "Type": "CashWithCompoundedInterestAndMaxTerm",
+                        "Items": [
+                            {
+                                "Amount": 135.0,
+                                "Token": "USD",
+                                "Interest": 1.0,
+                                "MaxMultiplier": 10.0
+                            }
+                        ]
+                    },
+                    "Claims": [ "Paid friend for RHours logo." ]
+                }
             ]
         }
     ]
