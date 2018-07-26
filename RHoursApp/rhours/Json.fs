@@ -28,14 +28,8 @@ let SetMemberValue (json:JsonObject) (label:string) (value:obj) =
     | None -> 
         failwith "Member not found"
 
-type JsonWriter (tw:TextWriter, depthOpt:int option) =
-    let mutable depth = 0
-
-    let IncDepth() = depth <- depth + 1
-    let DecDepth() = depth <- depth - 1
-    
-    new (tw:TextWriter) = JsonWriter(tw, None)
-
+type JsonWriter (tw:TextWriter) =
+ 
     member this.WriteNull() =
         tw.Write("null")
 
@@ -57,21 +51,15 @@ type JsonWriter (tw:TextWriter, depthOpt:int option) =
         tw.Write("\"")
 
     member this.Write(json:JsonObject) =
-        match depthOpt with
-        | Some(maxdepth) when maxdepth <= depth ->
-            tw.Write("{ ... }")
-        | _ -> 
-            IncDepth()
-            tw.Write("{")
-            let length = json.Length
-            json |>
-                List.iteri (fun i m -> 
-                                this.Write(m)
-                                if i < length - 1 then 
-                                    tw.Write(",")
-                           )
-            tw.Write("}")
-            DecDepth()
+        tw.Write("{")
+        let length = json.Length
+        json |>
+            List.iteri (fun i m -> 
+                            this.Write(m)
+                            if i < length - 1 then 
+                                tw.Write(",")
+                        )
+        tw.Write("}")
         
     member this.Write({Label=label; Value=value;}:JsonPair) =
         this.WriteString(label)
@@ -79,21 +67,15 @@ type JsonWriter (tw:TextWriter, depthOpt:int option) =
         this.Write(value)
     
     member this.Write(json:JsonArray) =
-        match depthOpt with
-        | Some(maxdepth) when maxdepth <= depth ->
-            tw.Write("[ ... ]")
-        | _ -> 
-            IncDepth()
-            tw.Write("[")
-            match json.Length with
-            | 0 -> ()
-            | length ->
-                for i = 0 to length - 2 do
-                    this.Write(json.[i])
-                    tw.Write(",")
-                this.Write(json.[length-1])
-            tw.Write("]")
-            DecDepth()
+        tw.Write("[")
+        match json.Length with
+        | 0 -> ()
+        | length ->
+            for i = 0 to length - 2 do
+                this.Write(json.[i])
+                tw.Write(",")
+            this.Write(json.[length-1])
+        tw.Write("]")
 
     member this.Write(data:obj) =
         match data with

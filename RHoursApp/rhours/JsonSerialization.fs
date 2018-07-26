@@ -9,18 +9,18 @@ open Microsoft.FSharp.Reflection
 type private ForReflection =
     class end
 
-let rec SerializeEnumerable (data: obj) (callback: (obj -> obj -> obj option)) : obj =
+let rec SerializeEnumerable (data: obj) : obj =
     let enumerable = data :?> IEnumerable
 
     let seqEnumerable = 
         seq {
             for x in enumerable do
-                yield (Serialize x callback)
+                yield (Serialize x)
         }
 
     (seqEnumerable |> Seq.toArray<obj>) :> obj
 
-and SerializeRecord (data: obj) (callback: (obj -> obj -> obj option)) : obj =
+and SerializeRecord (data: obj) : obj =
     let dataProperties = data.GetType().GetProperties()
     let fieldList = (FSharpValue.GetRecordFields(data)) |> Array.toList
 
@@ -30,12 +30,12 @@ and SerializeRecord (data: obj) (callback: (obj -> obj -> obj option)) : obj =
                 fun i x -> 
                     {
                         JsonPair.Label = (dataProperties.[i]).Name;
-                        JsonPair.Value = (Serialize x callback);
+                        JsonPair.Value = (Serialize x);
                     }
             )
     jsonList :> obj
 
-and SerializeUnion (data: obj) (callback: (obj -> obj -> obj option)) : obj =
+and SerializeUnion (data: obj) : obj =
     let dataType = data.GetType()
     let (info, caseData) = FSharpValue.GetUnionFields(data, dataType)
 
@@ -45,7 +45,7 @@ and SerializeUnion (data: obj) (callback: (obj -> obj -> obj option)) : obj =
             JsonPair.Value = info.Name
         }
 
-    let caseJson = SerializeEnumerable caseData callback
+    let caseJson = SerializeEnumerable caseData
     let itemsPair = 
         {
             JsonPair.Label = "Items";
@@ -54,32 +54,31 @@ and SerializeUnion (data: obj) (callback: (obj -> obj -> obj option)) : obj =
 
     ([ typePair; itemsPair; ]) :> obj
 
-and Serialize (data: obj) (callback: (obj -> obj -> obj option)) : obj =
-    match callback data callback with
-    | Some(x) -> x
-    | None -> 
-        match data with
-        | :? string
-        | :? int
-        | :? float
-        | :? bool -> data
-        | :? DateTime as x -> (x.ToString("o")) :> obj
-        | :? Decimal as x -> float(x) :> obj
-        | _ -> 
-            let dataType = data.GetType()
-            if FSharpType.IsRecord(dataType) then
-                SerializeRecord data callback
+and Serialize (data: obj) : obj =
+    let dataType = data.GetType()
+    match data with
+    | :? string
+    | :? int
+    | :? float
+    | :? bool -> data
+    | :? DateTime as x -> (x.ToString("o")) :> obj
+    | :? Decimal as x -> float(x) :> obj
+    | _ when dataType = typeof<byte array> ->
+        (Convert.ToBase64String(data :?> byte array)) :> obj
+    | _ -> 
+        if FSharpType.IsRecord(dataType) then
+            SerializeRecord data
+        else
+            if ((typeof<System.Collections.IEnumerable>).IsAssignableFrom(dataType)) then
+                SerializeEnumerable data
             else
-                if ((typeof<System.Collections.IEnumerable>).IsAssignableFrom(dataType)) then
-                    SerializeEnumerable data callback
+                if FSharpType.IsUnion(dataType) then
+                    SerializeUnion data
                 else
-                    if FSharpType.IsUnion(dataType) then
-                        SerializeUnion data callback
+                    if dataType.IsPrimitive then
+                        (data.ToString()) :> obj
                     else
-                        if dataType.IsPrimitive then
-                            (data.ToString()) :> obj
-                        else
-                            ("Unable to serialize data" :> obj)
+                        failwith "Unable to serialize data"
 
 let private IsList (typeOfT: Type) =
     if typeOfT.IsGenericType then
@@ -116,6 +115,7 @@ let rec Deserialize<'T> (json: obj) : 'T =
     | t when t = typeof<bool> -> json :?> 'T
     | t when t = typeof<DateTime> -> (DateTime.Parse(json :?> string) :> obj) :?> 'T
     | t when t = typeof<Decimal> -> (Decimal(json :?> float) :> obj) :?> 'T
+    | t when t = typeof<byte array> -> ((Convert.FromBase64String(json :?> string)) :> obj) :?> 'T
     | _ -> 
         if FSharpType.IsRecord(typeOfT) then
             DeserializeRecord<'T> (json :?> JsonObject)

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,11 +17,17 @@
     <Compile Include="JsonLexer.fs" />
     <Compile Include="Data.fs" />
     <Compile Include="Commands.fs" />
+    <Compile Include="SignContribution.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.5.0" />
+    <ProjectReference Include="..\RHoursCrypto\RHoursCrypto.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.5.1" />
+    <PackageReference Update="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
 </Project>

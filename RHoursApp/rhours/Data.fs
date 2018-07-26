@@ -31,14 +31,14 @@ type CashWithCompoundedInterestAndMaxTerm =
         MaxMultiplier: decimal;
     }
 
-type ContributionTerm =
+type CompensationTerm =
     | HourlyWithCompoundedInterestAndMaxTerm of HourlyWithCompoundedInterestAndMaxTerm
     | CashWithCompoundedInterestAndMaxTerm of CashWithCompoundedInterestAndMaxTerm
 
 type Contribution =
     {
         Id: string;
-        Term: ContributionTerm;
+        Terms: CompensationTerm;
         Claims: string list;
     }
 
@@ -50,6 +50,32 @@ type ContributionSpan =
         EndDate: DateTime;
         UtcOffset: float;
         Contributions: Contribution list;
+    }
+
+type CompensationInvoice =
+    {
+        Project: Project;
+        Contributor: Contributor;
+        StartDate: DateTime;
+        EndDate: DateTime;
+        UtcOffset: float;
+        Contribution: Contribution;
+    }
+
+type CompensationProposal =
+    {
+        Invoice: CompensationInvoice;
+        InvoiceHash: byte[];
+        ContributorSignature: byte[];       // Signature of InvoiceHash
+        ContributorPublicKey: string;
+    }
+
+type CompensationAgreement = 
+    {
+        Proposal: CompensationProposal;
+        ProposalHash: byte[];
+        AcceptorSignature: byte[];      // Signature of ProposalHash using Acceptor Key
+        AcceptorPublicKey: string;
     }
 
 type RHoursData =
@@ -73,6 +99,9 @@ type RHoursData =
         | true ->
             Some(sprintf "A project with the id '%s' already exists." id)
 
+    member this.GetProject (id: string) : Project =
+        (this.Projects) |> List.find (fun x -> x.Id = id)
+
     member this.DeleteProject (id: string) : string option =
         match this.ProjectExists(id) with
         | true -> 
@@ -88,6 +117,9 @@ type RHoursData =
             None
         | true ->
             Some(sprintf "A contributor with the id '%s' already exists." id)
+
+    member this.GetContributor (id: string) : Contributor =
+        (this.Contributors) |> List.find (fun x -> x.Id = id)
 
     member this.DeleteContributor (id: string) : string option =
         match this.ContributorExists(id) with
@@ -119,3 +151,29 @@ type RHoursData =
                     Some(sprintf "No contributor with id '%s' exists." contributorId)
             else
                 Some(sprintf "No project with id '%s' exists." projectId)
+
+    member this.GetContribution (projectId: string, contributorId: string, contributionId: string) : ContributionSpan * Contribution =
+        let resultOption = 
+            (this.ContributionSpans) |> 
+            List.tryPick (
+                fun x -> 
+                    match (x.Contributions) |> List.tryFind (fun y -> y.Id = contributionId) with
+                    | Some(c) -> Some(x, c)
+                    | None -> None
+                )
+        match resultOption with
+        | Some(result) -> result
+        | None -> failwith "Unable to find contribution"
+
+    member this.CreateCompensationInvoice (projectId: string, contributorId: string, contributionId: string) : CompensationInvoice = 
+        let project = this.GetProject(projectId)
+        let contributor = this.GetContributor(contributorId)
+        let (span, contribution) = this.GetContribution(projectId, contributorId, contributionId)
+        {
+            Project = project;
+            Contributor = contributor;
+            StartDate = span.StartDate;
+            EndDate = span.EndDate;
+            UtcOffset = span.UtcOffset;
+            Contribution = contribution;
+        }
