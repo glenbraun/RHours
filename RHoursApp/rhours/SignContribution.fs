@@ -10,26 +10,20 @@ open System.IO
 open System.Text
 open Json
 
-let private GetJsonBytes (data: obj) : byte[] =
-    use m = new MemoryStream()
-    use sw = new StreamWriter(m, Encoding.UTF8)
-    
-    let json = Serialize data
-    WriteJson sw json
-    sw.Flush()
-    m.Flush()
-
-    let jsonBytes = m.ToArray()
-    jsonBytes
-
 // Done by the contributor
 let SignCompensationInvoice (invoice: CompensationInvoice) (publicKey: string) (privateKey: string) = 
     //let (publicKeyText, privateKeyText) = Ed25519Signature.CreateKeyPair()
 
-    let jsonBytes = GetJsonBytes invoice
+    let json = Serialize invoice
+    let jsonBytes = GetJsonBytes json
     let hashBytes = CryptoProvider.Hash(jsonBytes)
 
-    let pk = sprintf "%s\n%s\n%s" "-----BEGIN PRIVATE KEY-----" privateKey "-----END PRIVATE KEY-----"
+    let pk = 
+        if privateKey.StartsWith("-----") then 
+            privateKey
+        else
+            sprintf "%s\n%s\n%s" "-----BEGIN PRIVATE KEY-----" privateKey "-----END PRIVATE KEY-----"
+
     let signedBytes = CryptoProvider.Sign(pk, hashBytes)
 
     let signedProposal = 
@@ -44,10 +38,16 @@ let SignCompensationInvoice (invoice: CompensationInvoice) (publicKey: string) (
 
 // Done by the project leader
 let SignCompensationProposal (proposal: CompensationProposal) (publicKey: string) (privateKey: string) = 
-    let jsonBytes = GetJsonBytes proposal
+    let json = Serialize proposal
+    let jsonBytes = GetJsonBytes json
     let hashBytes = CryptoProvider.Hash(jsonBytes)
 
-    let pk = sprintf "%s\n%s\n%s" "-----BEGIN PRIVATE KEY-----" privateKey "-----END PRIVATE KEY-----"
+    let pk = 
+        if privateKey.StartsWith("-----") then 
+            privateKey
+        else
+            sprintf "%s\n%s\n%s" "-----BEGIN PRIVATE KEY-----" privateKey "-----END PRIVATE KEY-----"
+
     let signedBytes = CryptoProvider.Sign(pk, hashBytes)
 
     let signedAgreement = 
@@ -62,12 +62,22 @@ let SignCompensationProposal (proposal: CompensationProposal) (publicKey: string
 
 // Verify ContributorSignedCompensationAgreement
 let VerifyCompensationProposal (proposal: CompensationProposal) =
-    let pk = sprintf "%s\n%s\n%s" "-----BEGIN PUBLIC KEY-----" (proposal.ContributorPublicKey) "-----END PUBLIC KEY-----"
+    let pk = 
+        if proposal.ContributorPublicKey.StartsWith("-----") then
+            proposal.ContributorPublicKey
+        else
+            sprintf "%s\n%s\n%s" "-----BEGIN PUBLIC KEY-----" (proposal.ContributorPublicKey) "-----END PUBLIC KEY-----"
+    
     let verified = CryptoProvider.Verify(pk, proposal.InvoiceHash, proposal.ContributorSignature)
     verified
 
 // Verify AcceptedCompensationAgreement
 let VerifyCompensationAgreement (agreement: CompensationAgreement) =
-    let pk = sprintf "%s\n%s\n%s" "-----BEGIN PUBLIC KEY-----" (agreement.AcceptorPublicKey) "-----END PUBLIC KEY-----"
+    let pk = 
+        if agreement.AcceptorPublicKey.StartsWith("-----") then
+            agreement.AcceptorPublicKey
+        else
+            sprintf "%s\n%s\n%s" "-----BEGIN PUBLIC KEY-----" (agreement.AcceptorPublicKey) "-----END PUBLIC KEY-----"
+    
     let verified = CryptoProvider.Verify(pk, agreement.ProposalHash, agreement.AcceptorSignature)
     verified

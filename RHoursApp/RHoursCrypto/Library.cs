@@ -18,11 +18,18 @@ namespace RHours.Crypto
 
             using (var key = Key.Create(algorithm, kp))
             {
-                var publicKeyBytes = key.Export(KeyBlobFormat.PkixPublicKey);
+                var publicKeyBytes = key.Export(KeyBlobFormat.PkixPublicKeyText);
                 var publicKey = Encoding.UTF8.GetString(publicKeyBytes);
+                publicKey = publicKey.Replace("-----BEGIN PUBLIC KEY-----", "");
+                publicKey = publicKey.Replace("-----END PUBLIC KEY-----", "");
+                publicKey = publicKey.Replace(Environment.NewLine, "");
 
-                var privateKeyBytes = key.Export(KeyBlobFormat.PkixPrivateKey);
+                var privateKeyBytes = key.Export(KeyBlobFormat.PkixPrivateKeyText);
                 var privateKey = Encoding.UTF8.GetString(privateKeyBytes);
+                privateKey = privateKey.Replace("-----BEGIN PRIVATE KEY-----", "");
+                privateKey = privateKey.Replace("-----END PRIVATE KEY-----", "");
+                privateKey = privateKey.Replace(Environment.NewLine, "");
+
                 return new Tuple<string, string>(publicKey, privateKey);
             }
         }

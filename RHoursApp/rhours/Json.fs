@@ -1,6 +1,6 @@
 ﻿module Json
 
-open System
+open System.Text
 open System.IO
 
 type JsonPair = {
@@ -98,4 +98,15 @@ let WriteJsonToString (json:obj) =
     ptw.Write(json)
     sw.Flush()
     sw.ToString()
+
+let GetJsonBytes (json: obj) : byte[] =
+    use m = new MemoryStream()
+    use sw = new StreamWriter(m, Encoding.UTF8)
+    
+    WriteJson sw json
+    sw.Flush()
+    m.Flush()
+
+    let jsonBytes = m.ToArray()
+    jsonBytes
     

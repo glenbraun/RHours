@@ -1,6 +1,7 @@
 ﻿module RHours.Commands
 
 open System
+open System.IO
 open RHours.Data
 
 type CommandDefinition =
@@ -47,6 +48,11 @@ and ReadCommand (state: CommandState) =
     
 let internal data = 
     {
+        Config = 
+            { 
+                PublicFolder = new DirectoryInfo("..\\..\\..\\..\\..\\");
+                PrivateFolder = new DirectoryInfo("..\\..\\..\\..\\..\\..\\RHours_private");
+            };
         Projects = [];
         Contributors = [];
         ContributionSpans = [];
@@ -157,12 +163,12 @@ and Contributor (parts: string list) =
 and ContributorAdd (parts: string list) =
     printfn "Contributor Add %A" parts
     match parts with
-    | [ id; name] ->
-        match (data.AddContributor(id, name)) with
+    | [ name; ] ->
+        match (data.AddContributor(name)) with
         | Some(err) -> printfn "%s" err
         | None -> ()
     | _ ->
-        printfn "Expected id and name"
+        printfn "Expected name"
 
     ReadCommand state
 

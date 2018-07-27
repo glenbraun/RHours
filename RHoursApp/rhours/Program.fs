@@ -1,11 +1,13 @@
 ﻿
 open System
+open System.IO
 
 open SignContribution
 
 open Json
 open RHours.Commands
 open RHours.Data
+open RHours.Crypto
 open JsonSerialization
 
 open Microsoft.FSharp.Text.Lexing
@@ -29,10 +31,21 @@ let main argv =
     //let xyz = ParseJsonFromFile @"C:\Projects\RChain\RHours\glenbraun\RHours\RHoursApp\rhours\Sample.json"
     //printfn "%A" xyz
 
-    //RunRHoursMenu()
+    //let (publicKey, priateKey) = RHours.Crypto.CryptoProvider.CreateKeyPair()
+
+    //let x  = 1
+    //printfn "%A" (publicKey, priateKey)
+
+    RunRHoursMenu()
 
     let data = 
         {
+            Config = 
+                { 
+                    PublicFolder = new DirectoryInfo("..\\..\\..\\..\\..\\");
+                    PrivateFolder = new DirectoryInfo("..\\..\\..\\..\\..\\..\\RHours_private");
+                };
+
             Projects = 
                 [
                     {
@@ -43,16 +56,19 @@ let main argv =
             Contributors = 
                 [
                     {
-                        Contributor.Id = "glen";
-                        Name = "Glen";
+                        ContributorInfoPublic.Name = "glen";
+                        PublicKey = "MCowBQYDK2VwAyEACOnA0dtn/SPVrl/OVYE1//xZP0xGV7x2vxjkgFH0cW0=";
+                        PrivateInfoHash = [| |];
                     };
                     {
-                        Contributor.Id = "jake";
-                        Name = "Jake";
+                        ContributorInfoPublic.Name = "jake";
+                        PublicKey = "Jake Public";
+                        PrivateInfoHash = [| |];
                     };
                     {
-                        Contributor.Id = "joshy";
-                        Name = "Joshy";
+                        ContributorInfoPublic.Name = "joshy";
+                        PublicKey = "MCowBQYDK2VwAyEAedqYOtnLSAkDXDg4+ovGow+HA1KZmM5SsuaKJJD6Xf8=";
+                        PrivateInfoHash = [| |];
                     };
                 ];
             ContributionSpans = 
