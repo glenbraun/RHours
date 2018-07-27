@@ -4,24 +4,10 @@ open System.IO
 
 open SignContribution
 
-open Json
 open RHours.Commands
 open RHours.Data
-open RHours.Crypto
-open JsonSerialization
 
-open Microsoft.FSharp.Text.Lexing
-open System.Globalization
 
-let ParseJsonFromString (json:string) =
-    let lexbuf = LexBuffer<char>.FromString json
-    JsonParser.start JsonLexer.json lexbuf
-
-let ParseJsonFromFile (fileName:string) = 
-    let fi = System.IO.FileInfo(fileName)
-    use textReader = new System.IO.StreamReader(fileName)
-    let lexbuf = LexBuffer<char>.FromTextReader textReader
-    JsonParser.start JsonLexer.json lexbuf
 
 [<EntryPoint>]
 let main argv =

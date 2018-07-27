@@ -2,6 +2,8 @@
 
 open System
 open System.IO
+open Microsoft.FSharp.Text.Lexing
+
 open RHours.Crypto
 open Json
 open JsonSerialization
@@ -16,7 +18,7 @@ type ContributorInfoPublic =
     {
         Name: string;
         PublicKey: string;
-        PrivateInfoHash: byte array;
+        mutable PrivateInfoHash: byte array;
     }
 
 type ContributorInfoAttribute =
@@ -102,6 +104,16 @@ type RHoursConfig =
         PrivateFolder: DirectoryInfo;
     }
 
+
+let ParseJsonFromString(json:string) =
+    let lexbuf = LexBuffer<char>.FromString json
+    JsonParser.start JsonLexer.json lexbuf
+    
+let ParseJsonFromFile (fileName:string) = 
+    use textReader = new System.IO.StreamReader(fileName)
+    let lexbuf = LexBuffer<char>.FromTextReader textReader
+    JsonParser.start JsonLexer.json lexbuf
+
 type RHoursData =
     {
         mutable Config: RHoursConfig;
@@ -139,6 +151,20 @@ type RHoursData =
         let filename = name + ".json"
         let files = this.Config.PrivateFolder.GetFiles(filename)
         files.Length > 0
+
+    member this.GetContributorPrivateInfo(name: string) =
+        let filename = name + ".json"
+        let files = this.Config.PrivateFolder.GetFiles(filename)
+        if files.Length = 1 then
+            // load the private info from the file, makes a json object
+            // deserialize the json to a typed object
+            // calculate the hash
+            // update the public information with the hash
+            let json = ParseJsonFromFile (files.[0].FullName)
+            let privateInfo = JsonSerialization.Deserialize<ContributorInfoPrivate> json
+            privateInfo
+        else
+            failwith "Contributor private file does not exist."
 
     member this.CreateContributorPrivateFile(name: string) =
         if this.ContributorPrivateFileExists(name) then
@@ -178,6 +204,19 @@ type RHoursData =
 
     member this.GetContributor (name: string) : ContributorInfoPublic =
         (this.Contributors) |> List.find (fun x -> x.Name = name)
+
+    member this.HashContributor (name: string) : string option =
+        match this.ContributorExists(name) with
+        | true -> 
+            let privateInfo = this.GetContributorPrivateInfo(name)
+            let serializedJson = JsonSerialization.Serialize privateInfo
+            let jsonBytes = GetJsonBytes serializedJson
+            let privateInfoHash = CryptoProvider.Hash(jsonBytes)
+            let publicInfo = this.GetContributor(name)
+            publicInfo.PrivateInfoHash <- privateInfoHash
+            None
+        | false ->
+            Some(sprintf "No contributor with name '%s' exists." name)
 
     member this.DeleteContributor (name: string) : string option =
         match this.ContributorExists(name) with

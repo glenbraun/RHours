@@ -137,6 +137,11 @@ and Contributor (parts: string list) =
                 Execute = ContributorAdd;
             };
             {
+                CommandText = "hash";
+                HelpText = "Update hash of private info for a contributor."
+                Execute = ContributorHash;
+            };
+            {
                 CommandText = "delete";
                 HelpText = "Delete a contributor";
                 Execute = ContributorDelete;
@@ -172,16 +177,29 @@ and ContributorAdd (parts: string list) =
 
     ReadCommand state
 
+and ContributorHash (parts: string list) =
+    printfn "Contributor Hash %A" parts
+
+    match parts with
+    | [ name ] ->
+        match data.HashContributor(name) with
+        | Some(err) -> printfn "%s" err
+        | None -> ()
+    | _ ->
+        printfn "Expected name"
+
+    ReadCommand state
+
 and ContributorDelete (parts: string list) =
     printfn "Contributor Delete %A" parts
 
     match parts with
-    | [ id ] ->
-        match data.DeleteContributor(id) with
+    | [ name ] ->
+        match data.DeleteContributor(name) with
         | Some(err) -> printfn "%s" err
         | None -> ()
     | _ ->
-        printfn "Expected id"
+        printfn "Expected name"
 
     ReadCommand state
 
