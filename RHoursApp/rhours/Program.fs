@@ -12,18 +12,6 @@ open RHours.Data
 [<EntryPoint>]
 let main argv =
 
-    //let x = ParseJsonFromString @"{ ""glen"" : 1 }"
-
-    //let xyz = ParseJsonFromFile @"C:\Projects\RChain\RHours\glenbraun\RHours\RHoursApp\rhours\Sample.json"
-    //printfn "%A" xyz
-
-    //let (publicKey, priateKey) = RHours.Crypto.CryptoProvider.CreateKeyPair()
-
-    //let x  = 1
-    //printfn "%A" (publicKey, priateKey)
-
-    RunRHoursMenu()
-
     let data = 
         {
             Config = 
@@ -42,17 +30,17 @@ let main argv =
             Contributors = 
                 [
                     {
-                        ContributorInfoPublic.Name = "glen";
+                        ContributorInfoPublic.PublicName = "glen";
                         PublicKey = "MCowBQYDK2VwAyEACOnA0dtn/SPVrl/OVYE1//xZP0xGV7x2vxjkgFH0cW0=";
                         PrivateInfoHash = [| |];
                     };
                     {
-                        ContributorInfoPublic.Name = "jake";
+                        ContributorInfoPublic.PublicName = "jake";
                         PublicKey = "Jake Public";
                         PrivateInfoHash = [| |];
                     };
                     {
-                        ContributorInfoPublic.Name = "joshy";
+                        ContributorInfoPublic.PublicName = "joshy";
                         PublicKey = "MCowBQYDK2VwAyEAedqYOtnLSAkDXDg4+ovGow+HA1KZmM5SsuaKJJD6Xf8=";
                         PrivateInfoHash = [| |];
                     };
@@ -146,6 +134,24 @@ let main argv =
                     };
                 ];
         }
+
+
+
+    //let x = ParseJsonFromString @"{ ""glen"" : 1 }"
+
+    //let xyz = ParseJsonFromFile @"C:\Projects\RChain\RHours\glenbraun\RHours\RHoursApp\rhours\Sample.json"
+    //printfn "%A" xyz
+
+    //let (publicKey, priateKey) = RHours.Crypto.CryptoProvider.CreateKeyPair()
+
+    //let x  = 1
+    //printfn "%A" (publicKey, priateKey)
+
+    RHours.Commands.Data <- data
+
+    data.Initialize(data.Config)
+
+    RunRHoursMenu()
 
     //data.ContributionSpans <- []
 

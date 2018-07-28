@@ -9,6 +9,12 @@ open Microsoft.FSharp.Reflection
 type private ForReflection =
     class end
 
+type SkipSerializationAttribute() =
+    inherit Attribute()
+
+let private SkipProperty (p: PropertyInfo) =
+    (p.GetCustomAttributes(typeof<SkipSerializationAttribute>) |> Seq.length) <> 0
+
 let rec SerializeEnumerable (data: obj) : obj =
     let enumerable = data :?> IEnumerable
 
@@ -21,18 +27,27 @@ let rec SerializeEnumerable (data: obj) : obj =
     (seqEnumerable |> Seq.toArray<obj>) :> obj
 
 and SerializeRecord (data: obj) : obj =
-    let dataProperties = data.GetType().GetProperties()
+    let dataType = data.GetType()
+    let dataProperties = dataType.GetProperties() |> Array.toList
     let fieldList = (FSharpValue.GetRecordFields(data)) |> Array.toList
 
+    let mutable i = 0
     let jsonList = 
-        fieldList |> List.mapi
-            (
-                fun i x -> 
-                    {
-                        JsonPair.Label = (dataProperties.[i]).Name;
-                        JsonPair.Value = (Serialize x);
-                    }
-            )
+        fieldList
+            |> List.choose
+                (
+                    fun x -> 
+                        let p = dataProperties.[i]
+                        i <- i + 1
+                        if SkipProperty p then
+                            None
+                        else
+                            Some
+                                {
+                                    JsonPair.Label = p.Name;
+                                    JsonPair.Value = (Serialize x);
+                                }
+                )
     jsonList :> obj
 
 and SerializeUnion (data: obj) : obj =
@@ -164,15 +179,23 @@ and DeserializeRecord<'T> (jsonObj : JsonObject) : 'T =
     let typeOfT = typeof<'T>
     let recordFields = FSharpType.GetRecordFields(typeOfT)  // PropertyInfo
 
-    let DeserializeProperty (p:PropertyInfo) (jsonPair: JsonPair) : obj =  // returns deserialized object as obj
-        let desMethod = GetMethod (p.PropertyType) "Deserialize"
+    let recordData = Array.create (recordFields.Length) null
+    let mutable i = 0
 
-        if p.Name = jsonPair.Label then
-            desMethod.Invoke(null, [| jsonPair.Value |])
-        else
-            failwith "Bad order of data."
+    let DeserializeProperty (jsonPair: JsonPair) =  // returns deserialized object as obj
+        while SkipProperty (recordFields.[i]) do
+            i <- i + 1
+        
+        let p = recordFields.[i]
+        if not (SkipProperty p) then
+            if p.Name = jsonPair.Label then
+                let desMethod = GetMethod (p.PropertyType) "Deserialize"
+                recordData.[i] <- desMethod.Invoke(null, [| jsonPair.Value |])
+                i <- i + 1
+            else
+                failwith "Bad order of data."
 
-    let recordData = (Seq.map2 DeserializeProperty recordFields jsonObj) |> Seq.toArray
+    jsonObj |> List.iter DeserializeProperty
     let recordObj = FSharpValue.MakeRecord(typeOfT, recordData)
     (recordObj :?> 'T)
 

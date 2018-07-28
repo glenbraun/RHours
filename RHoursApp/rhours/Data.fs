@@ -16,7 +16,7 @@ type Project =
 
 type ContributorInfoPublic =
     {
-        Name: string;
+        PublicName: string;
         PublicKey: string;
         mutable PrivateInfoHash: byte array;
     }
@@ -116,17 +116,45 @@ let ParseJsonFromFile (fileName:string) =
 
 type RHoursData =
     {
+        [<SkipSerialization>]
         mutable Config: RHoursConfig;
         mutable Projects : Project list;
         mutable Contributors : ContributorInfoPublic list;
         mutable ContributionSpans : ContributionSpan list;
     } with
 
+    member this.Initialize(config: RHoursConfig) =
+        // Create the public folder if it doesn't exist
+        // Create the private folder if it doesn't exist
+        // Parse and desrialize the data in the rhours.json file if it exists
+        // Save the current data to an rhours.json file
+        //      This will create it if it didn't exist before
+        //      Also saves it in the standard format if it wasn't before
+
+        this.Config <- config
+        if not(config.PublicFolder.Exists) then
+            config.PublicFolder.Create()        
+
+        if not(config.PrivateFolder.Exists) then
+            config.PrivateFolder.Create()
+        
+        let files = config.PublicFolder.GetFiles("rhours.json")
+        if files.Length = 1 then
+            let fileJson = ParseJsonFromFile (files.[0].FullName)
+            let fileData = JsonSerialization.Deserialize<RHoursData> fileJson
+            this.Projects <- fileData.Projects
+            this.Contributors <- fileData.Contributors
+            this.ContributionSpans <- fileData.ContributionSpans
+        
+        let json = Serialize this
+        use rhoursFile = File.CreateText(Path.Combine(config.PublicFolder.FullName, "rhours.json"))
+        WriteJson rhoursFile json
+
     member this.ProjectExists(id: string) = 
         (this.Projects) |> List.exists (fun x -> x.Id = id)
 
-    member this.ContributorExists(name: string) = 
-        (this.Contributors) |> List.exists (fun x -> x.Name = name)
+    member this.ContributorExists(publicName: string) = 
+        (this.Contributors) |> List.exists (fun x -> x.PublicName = publicName)
 
     member this.AddProject (id: string, name: string) : string option =
         match this.ProjectExists(id) with
@@ -173,8 +201,8 @@ type RHoursData =
             let filename = name + ".json"
             File.CreateText(Path.Combine(this.Config.PrivateFolder.FullName, filename))
      
-    member this.AddContributor (name: string) : string option =
-        match (this.ContributorExists(name), this.ContributorPrivateFileExists(name)) with
+    member this.AddContributor (publicName: string) : string option =
+        match (this.ContributorExists(publicName), this.ContributorPrivateFileExists(publicName)) with
         | (false, false) -> 
             // generate key pair
             // create private key file
@@ -182,7 +210,7 @@ type RHoursData =
             // need json with indent
 
             let (publicKey, privateKey) = CryptoProvider.CreateKeyPair()
-            use privateInfoFile = this.CreateContributorPrivateFile(name)
+            use privateInfoFile = this.CreateContributorPrivateFile(publicName)
             let privateInfo = 
                 {
                     PublicKey = publicKey;
@@ -195,15 +223,15 @@ type RHoursData =
             let jsonBytes = GetJsonBytes json
             let privateInfoHash = CryptoProvider.Hash(jsonBytes)
 
-            this.Contributors <- { ContributorInfoPublic.Name = name; PublicKey = publicKey; PrivateInfoHash = privateInfoHash; } :: (this.Contributors)
+            this.Contributors <- { ContributorInfoPublic.PublicName = publicName; PublicKey = publicKey; PrivateInfoHash = privateInfoHash; } :: (this.Contributors)
             None
         | (true, _) ->
-            Some(sprintf "A contributor with the name '%s' already exists." name)
+            Some(sprintf "A contributor with the name '%s' already exists." publicName)
         | (_, true) ->
             Some("A contributor private file already exists.")
 
-    member this.GetContributor (name: string) : ContributorInfoPublic =
-        (this.Contributors) |> List.find (fun x -> x.Name = name)
+    member this.GetContributor (publicName: string) : ContributorInfoPublic =
+        (this.Contributors) |> List.find (fun x -> x.PublicName = publicName)
 
     member this.HashContributor (name: string) : string option =
         match this.ContributorExists(name) with
@@ -218,13 +246,13 @@ type RHoursData =
         | false ->
             Some(sprintf "No contributor with name '%s' exists." name)
 
-    member this.DeleteContributor (name: string) : string option =
-        match this.ContributorExists(name) with
+    member this.DeleteContributor (publicName: string) : string option =
+        match this.ContributorExists(publicName) with
         | true -> 
-            this.Contributors <- (this.Contributors) |> List.filter (fun x -> x.Name <> name)
+            this.Contributors <- (this.Contributors) |> List.filter (fun x -> x.PublicName <> publicName)
             None
         | false ->
-            Some(sprintf "No contributor with name '%s' exists." name)
+            Some(sprintf "No contributor with name '%s' exists." publicName)
 
     member this.AddContributionSpan (projectId: string, contributorId: string, startDate: DateTime, endDate: DateTime) : string option =
         if startDate > endDate then

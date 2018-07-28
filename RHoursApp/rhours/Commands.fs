@@ -46,17 +46,18 @@ and ReadCommand (state: CommandState) =
     let parts = SplitLine line    
     ParseLine state parts
     
-let internal data = 
+let mutable Data = 
     {
         Config = 
             { 
-                PublicFolder = new DirectoryInfo("..\\..\\..\\..\\..\\");
-                PrivateFolder = new DirectoryInfo("..\\..\\..\\..\\..\\..\\RHours_private");
+                PublicFolder = new DirectoryInfo(Directory.GetCurrentDirectory())
+                PrivateFolder = new DirectoryInfo(Directory.GetCurrentDirectory())
             };
         Projects = [];
         Contributors = [];
         ContributionSpans = [];
     }
+
 
 let internal state = 
     {
@@ -102,7 +103,7 @@ and ProjectAdd (parts: string list) =
     printfn "Project Add %A" parts
     match parts with
     | [ id; name] ->
-        match (data.AddProject(id, name)) with
+        match (Data.AddProject(id, name)) with
         | Some(err) -> printfn "%s" err
         | None -> ()
     | _ ->
@@ -115,7 +116,7 @@ and ProjectDelete (parts: string list) =
 
     match parts with
     | [ id ] ->
-        match data.DeleteProject(id) with
+        match Data.DeleteProject(id) with
         | Some(err) -> printfn "%s" err
         | None -> ()
     | _ ->
@@ -124,7 +125,7 @@ and ProjectDelete (parts: string list) =
     ReadCommand state
 
 and ProjectList (parts: string list) =
-    printfn "Projects: %A" data.Projects
+    printfn "Projects: %A" Data.Projects
     ReadCommand state
     
 and Contributor (parts: string list) =
@@ -169,7 +170,7 @@ and ContributorAdd (parts: string list) =
     printfn "Contributor Add %A" parts
     match parts with
     | [ name; ] ->
-        match (data.AddContributor(name)) with
+        match (Data.AddContributor(name)) with
         | Some(err) -> printfn "%s" err
         | None -> ()
     | _ ->
@@ -182,7 +183,7 @@ and ContributorHash (parts: string list) =
 
     match parts with
     | [ name ] ->
-        match data.HashContributor(name) with
+        match Data.HashContributor(name) with
         | Some(err) -> printfn "%s" err
         | None -> ()
     | _ ->
@@ -195,7 +196,7 @@ and ContributorDelete (parts: string list) =
 
     match parts with
     | [ name ] ->
-        match data.DeleteContributor(name) with
+        match Data.DeleteContributor(name) with
         | Some(err) -> printfn "%s" err
         | None -> ()
     | _ ->
@@ -204,7 +205,7 @@ and ContributorDelete (parts: string list) =
     ReadCommand state
 
 and ContributorList (parts: string list) =
-    printfn "Contributors: %A" data.Contributors
+    printfn "Contributors: %A" Data.Contributors
     ReadCommand state
 
 and ContributionSpan (parts: string list) =
@@ -241,7 +242,7 @@ and ContributionSpan (parts: string list) =
     ParseLine state parts
 
 and Exit (parts: string list) =
-    printfn "%A" data
+    printfn "%A" Data
     printfn "Exit"
 
 and MainMenu (parts: string list) =
