@@ -4,6 +4,18 @@ open System
 open System.IO
 open RHours.Data
 
+let mutable Data = 
+    {
+        Config = 
+            { 
+                PublicFolder = new DirectoryInfo(Directory.GetCurrentDirectory())
+                PrivateFolder = new DirectoryInfo(Directory.GetCurrentDirectory())
+            };
+        Projects = [];
+        Contributors = [];
+        ContributionSpans = [];
+    }
+
 type CommandDefinition =
     {
         CommandText : string;
@@ -45,19 +57,8 @@ and ReadCommand (state: CommandState) =
     let line = Console.ReadLine()
     let parts = SplitLine line    
     ParseLine state parts
+    Data.Save()
     
-let mutable Data = 
-    {
-        Config = 
-            { 
-                PublicFolder = new DirectoryInfo(Directory.GetCurrentDirectory())
-                PrivateFolder = new DirectoryInfo(Directory.GetCurrentDirectory())
-            };
-        Projects = [];
-        Contributors = [];
-        ContributionSpans = [];
-    }
-
 
 let internal state = 
     {

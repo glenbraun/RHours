@@ -146,10 +146,13 @@ type RHoursData =
             this.Contributors <- fileData.Contributors
             this.ContributionSpans <- fileData.ContributionSpans
         
-        let json = Serialize this
-        use rhoursFile = File.CreateText(Path.Combine(config.PublicFolder.FullName, "rhours.json"))
-        WriteJson rhoursFile json
+        this.Save()
 
+    member this.Save() =
+        let json = Serialize this
+        use rhoursFile = File.CreateText(Path.Combine(this.Config.PublicFolder.FullName, "rhours.json"))
+        WriteJsonIndented rhoursFile json
+        
     member this.ProjectExists(id: string) = 
         (this.Projects) |> List.exists (fun x -> x.Id = id)
 
@@ -218,7 +221,7 @@ type RHoursData =
                     Attributes = [ { ContributorInfoAttribute.Name = "Example Attribute Name"; Value = "Example Attribute Value"; }; ];
                 }
             let json = Serialize privateInfo
-            WriteJson privateInfoFile json
+            WriteJsonIndented privateInfoFile json
 
             let jsonBytes = GetJsonBytes json
             let privateInfoHash = CryptoProvider.Hash(jsonBytes)

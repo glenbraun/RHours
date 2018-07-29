@@ -28,8 +28,22 @@ let SetMemberValue (json:JsonObject) (label:string) (value:obj) =
     | None -> 
         failwith "Member not found"
 
-type JsonWriter (tw:TextWriter) =
- 
+type JsonWriter (tw:TextWriter, indent: bool) =
+    let mutable level = 0
+
+    let Indent (i: int) =
+        // Adds new line
+        // if i > 0, increases level and adds that many spaces
+        // if i < 0, decreases level and adds that many spaces
+        if indent then
+            tw.WriteLine()
+            level <- if i > 0 then level + 1 elif i < 0 then level - 1 else level
+            
+            for i = 1 to level do
+                tw.Write("    ")
+
+    new (tw: TextWriter) = JsonWriter(tw, false)
+
     member this.WriteNull() =
         tw.Write("null")
 
@@ -52,13 +66,16 @@ type JsonWriter (tw:TextWriter) =
 
     member this.Write(json:JsonObject) =
         tw.Write("{")
+        Indent(1)
         let length = json.Length
         json |>
             List.iteri (fun i m -> 
                             this.Write(m)
                             if i < length - 1 then 
                                 tw.Write(",")
+                                Indent(0)
                         )
+        Indent(-1)
         tw.Write("}")
         
     member this.Write({Label=label; Value=value;}:JsonPair) =
@@ -71,10 +88,14 @@ type JsonWriter (tw:TextWriter) =
         match json.Length with
         | 0 -> ()
         | length ->
+            Indent(1)
             for i = 0 to length - 2 do
                 this.Write(json.[i])
                 tw.Write(",")
+                Indent(0)
+        
             this.Write(json.[length-1])
+            Indent(-1)
         tw.Write("]")
 
     member this.Write(data:obj) =
@@ -90,6 +111,10 @@ type JsonWriter (tw:TextWriter) =
 
 let WriteJson (tw:TextWriter) (json:obj) =
     let ptw = JsonWriter(tw)
+    ptw.Write(json)
+
+let WriteJsonIndented (tw:TextWriter) (json:obj) =
+    let ptw = JsonWriter(tw, true)
     ptw.Write(json)
 
 let WriteJsonToString (json:obj) =
