@@ -7,6 +7,30 @@ namespace RHours.Crypto
 {
     public class CryptoProvider
     {
+        private static string IdChars = "abcdefghijklmnop";
+        public static string RandomId()
+        {
+            using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
+            {
+                var chars = new char[8];
+                var bytes = new byte[4];
+                rng.GetBytes(bytes);
+
+                var bits = new System.Collections.BitArray(bytes);
+                int j = 0;
+                for (int i=0; i < bits.Length; i=i+4)
+                {
+                    int index = (8 * (bits[i] ? 1 : 0)) +
+                                (4 * (bits[i + 1] ? 1 : 0)) +
+                                (2 * (bits[i + 2] ? 1 : 0)) +
+                                (1 * (bits[i + 3] ? 1 : 0));
+                    chars[j++] = IdChars[index];
+                }
+
+                return new string(chars);
+            }
+        }
+
         public static Tuple<string, string> CreateKeyPair()
         {
             var algorithm = SignatureAlgorithm.Ed25519;

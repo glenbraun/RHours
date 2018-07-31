@@ -12,8 +12,13 @@ open RHours.Data
 [<EntryPoint>]
 let main argv =
 
+    File.Delete(@"C:\Projects\RChain\RHours\glenbraun\RHours\rhours.json")
+    (Directory.GetFiles(@"C:\Projects\RChain\RHours\glenbraun\Rhours_private"))
+        |> Array.iter (fun f -> File.Delete(f))
+
     let data = 
         {
+            Version = "1.0";
             Config = 
                 { 
                     PublicFolder = new DirectoryInfo("..\\..\\..\\..\\..\\");
@@ -45,6 +50,54 @@ let main argv =
                         PrivateInfoHash = [| |];
                     };
                 ];
+            CompensationAgreements = [];
+            InvoiceEvents = [];
+        }
+
+
+    //let x = ParseJsonFromString @"{ ""glen"" : 1 }"
+
+    //let xyz = ParseJsonFromFile @"C:\Projects\RChain\RHours\glenbraun\RHours\RHoursApp\rhours\Sample.json"
+    //printfn "%A" xyz
+
+    //let (publicKey, priateKey) = RHours.Crypto.CryptoProvider.CreateKeyPair()
+
+    //let x  = 1
+    //printfn "%A" (publicKey, priateKey)
+
+    RHours.Commands.Data <- data
+    RHours.Commands.Data.Initialize(data.Config)
+
+    RunRHoursMenu()
+
+    //data.ContributionSpans <- []
+
+    //let dataJson = Serialize (data) (fun x y -> None)
+
+    //let jsonString = WriteJsonToString dataJson
+
+    //let testjson = ParseJsonFromString jsonString
+    //let testdata = Deserialize<RHoursData> testjson
+
+    //let data2 = Deserialize<RHoursData> dataJson (DeserializeRHoursData<RHoursData>)
+    let joshyPublicKey = "MCowBQYDK2VwAyEAedqYOtnLSAkDXDg4+ovGow+HA1KZmM5SsuaKJJD6Xf8="
+    let joshyPrivateKey = "MC4CAQAwBQYDK2VwBCIEIMjBC0tPSJgEqDOWdGOoA3CDFuTi5xoEeZas6/jY3Hj4"
+
+    let glenPublicKey = "MCowBQYDK2VwAyEACOnA0dtn/SPVrl/OVYE1//xZP0xGV7x2vxjkgFH0cW0="
+    let glenPrivateKey = "MC4CAQAwBQYDK2VwBCIEIBJ7kFZXvA/XjCQc+7c0NBRMWRvCzMLgXIcEZYv36ISN"
+
+    //let invoice = data.CreateCompensationInvoice("rhours", "joshy", "1")
+    //let proposal = SignCompensationInvoice invoice joshyPublicKey joshyPrivateKey
+    //let agreement = SignCompensationProposal proposal glenPublicKey glenPrivateKey
+
+    //let pver = VerifyCompensationProposal proposal
+    //let pagree = VerifyCompensationAgreement agreement
+
+    //printfn "%A" (proposal, agreement, pver, pagree)
+    0 // return an integer exit code
+
+
+(*
             ContributionSpans = 
                 [
                     {
@@ -133,49 +186,4 @@ let main argv =
                             ];
                     };
                 ];
-        }
-
-
-
-    //let x = ParseJsonFromString @"{ ""glen"" : 1 }"
-
-    //let xyz = ParseJsonFromFile @"C:\Projects\RChain\RHours\glenbraun\RHours\RHoursApp\rhours\Sample.json"
-    //printfn "%A" xyz
-
-    //let (publicKey, priateKey) = RHours.Crypto.CryptoProvider.CreateKeyPair()
-
-    //let x  = 1
-    //printfn "%A" (publicKey, priateKey)
-
-    RHours.Commands.Data <- data
-
-    data.Initialize(data.Config)
-
-    RunRHoursMenu()
-
-    //data.ContributionSpans <- []
-
-    //let dataJson = Serialize (data) (fun x y -> None)
-
-    //let jsonString = WriteJsonToString dataJson
-
-    //let testjson = ParseJsonFromString jsonString
-    //let testdata = Deserialize<RHoursData> testjson
-
-    //let data2 = Deserialize<RHoursData> dataJson (DeserializeRHoursData<RHoursData>)
-    let joshyPublicKey = "MCowBQYDK2VwAyEAedqYOtnLSAkDXDg4+ovGow+HA1KZmM5SsuaKJJD6Xf8="
-    let joshyPrivateKey = "MC4CAQAwBQYDK2VwBCIEIMjBC0tPSJgEqDOWdGOoA3CDFuTi5xoEeZas6/jY3Hj4"
-
-    let glenPublicKey = "MCowBQYDK2VwAyEACOnA0dtn/SPVrl/OVYE1//xZP0xGV7x2vxjkgFH0cW0="
-    let glenPrivateKey = "MC4CAQAwBQYDK2VwBCIEIBJ7kFZXvA/XjCQc+7c0NBRMWRvCzMLgXIcEZYv36ISN"
-
-    let invoice = data.CreateCompensationInvoice("rhours", "joshy", "1")
-    let proposal = SignCompensationInvoice invoice joshyPublicKey joshyPrivateKey
-    let agreement = SignCompensationProposal proposal glenPublicKey glenPrivateKey
-
-    let pver = VerifyCompensationProposal proposal
-    let pagree = VerifyCompensationAgreement agreement
-
-    printfn "%A" (proposal, agreement, pver, pagree)
-    0 // return an integer exit code
-
+*)

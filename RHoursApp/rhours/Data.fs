@@ -57,15 +57,12 @@ type CompensationTerm =
 
 type Contribution =
     {
-        Id: string;
         Terms: CompensationTerm;
         Claims: string list;
     }
 
 type ContributionSpan =
     {
-        ProjectId: string;
-        ContributorId: string;
         StartDate: DateTime;
         EndDate: DateTime;
         UtcOffset: float;
@@ -74,12 +71,10 @@ type ContributionSpan =
 
 type CompensationInvoice =
     {
+        InvoiceId: string;
         Project: Project;
         Contributor: ContributorInfoPublic;
-        StartDate: DateTime;
-        EndDate: DateTime;
-        UtcOffset: float;
-        Contributions: Contribution list;
+        mutable ContributionSpans: ContributionSpan list;
     }
 
 type CompensationProposal =
@@ -98,12 +93,44 @@ type CompensationAgreement =
         AcceptorPublicKey: string;
     }
 
+type Payment =
+    {
+        InvoiceId: string;
+        Ammount: decimal;
+    }
+
+type CompensationSale =
+    {
+        InvoiceId: string;                                      // the invoice that is being sold
+        CompensationAgreements : CompensationAgreement list;    // the compensation agreements which superceed the invoice
+    }
+
+type SaleProposal =
+    {
+        Sale: CompensationSale;
+        SaleHash: byte[];                                       // Hash of CompensationSale
+        SellorSignature: byte[];                                // Signature of SaleHash
+        SellorPublicKey: string;
+    }
+
+type SaleAgreement =
+    {
+        Proposal: SaleProposal;
+        ProposalHash: byte[];
+        PurchasorSignature: byte[];        
+        PurchasorPublicKey: string; 
+    }
+
+type IvoiceEvent =
+    | Payment of Payment                // Happens when revenue is transferred to contributor
+    | Sale of SaleAgreement             // Record of sale of contribution
+    | Closure of InvoiceId: string      // Marker of fully compensated agreement
+
 type RHoursConfig = 
     {
         PublicFolder: DirectoryInfo;
         PrivateFolder: DirectoryInfo;
     }
-
 
 let ParseJsonFromString(json:string) =
     let lexbuf = LexBuffer<char>.FromString json
@@ -116,11 +143,13 @@ let ParseJsonFromFile (fileName:string) =
 
 type RHoursData =
     {
+        Version: string;
         [<SkipSerialization>]
         mutable Config: RHoursConfig;
         mutable Projects : Project list;
         mutable Contributors : ContributorInfoPublic list;
-        mutable ContributionSpans : ContributionSpan list;
+        mutable CompensationAgreements : CompensationAgreement list;
+        mutable InvoiceEvents : IvoiceEvent list;
     } with
 
     member this.Initialize(config: RHoursConfig) =
@@ -144,7 +173,8 @@ type RHoursData =
             let fileData = JsonSerialization.Deserialize<RHoursData> fileJson
             this.Projects <- fileData.Projects
             this.Contributors <- fileData.Contributors
-            this.ContributionSpans <- fileData.ContributionSpans
+            this.CompensationAgreements <- fileData.CompensationAgreements
+            this.InvoiceEvents <- fileData.InvoiceEvents
         
         this.Save()
 
@@ -159,24 +189,41 @@ type RHoursData =
     member this.ContributorExists(publicName: string) = 
         (this.Contributors) |> List.exists (fun x -> x.PublicName = publicName)
 
-    member this.AddProject (id: string, name: string) : string option =
+    member this.ContributorHasContributions(publicName: string) =
+        this.CompensationAgreements 
+            |> List.exists ( 
+                    fun a -> 
+                        a.Proposal.Invoice.Contributor.PublicName = publicName
+                )
+
+    member this.ProjectHasContributions(projectId: string) =
+        this.CompensationAgreements
+            |> List.exists ( 
+                    fun a ->
+                        a.Proposal.Invoice.Project.Id = projectId
+                )
+    
+    member this.AddProject (id: string, name: string) : Choice<Project, string> =
         match this.ProjectExists(id) with
         | false -> 
-            this.Projects <- { Project.Id = id; Name = name} :: (this.Projects)
-            None
+            let project = { Project.Id = id; Name = name}
+            this.Projects <- project :: (this.Projects)
+            Choice1Of2(project)
         | true ->
-            Some(sprintf "A project with the id '%s' already exists." id)
+            Choice2Of2(sprintf "A project with the id '%s' already exists." id)
 
     member this.GetProject (id: string) : Project =
         (this.Projects) |> List.find (fun x -> x.Id = id)
 
     member this.DeleteProject (id: string) : string option =
-        match this.ProjectExists(id) with
-        | true -> 
+        match (this.ProjectExists(id), this.ProjectHasContributions(id)) with
+        | (true, false) -> 
             this.Projects <- (this.Projects) |> List.filter (fun x -> x.Id <> id)
             None
-        | false ->
+        | (false, _) ->
             Some(sprintf "No project with id '%s' exists." id)
+        | (_, true) -> 
+            Some(sprintf "The project with id '%s' has contributions and cannot be deleted." id)
 
     member this.ContributorPrivateFileExists(name: string) =
         let filename = name + ".json"
@@ -204,7 +251,7 @@ type RHoursData =
             let filename = name + ".json"
             File.CreateText(Path.Combine(this.Config.PrivateFolder.FullName, filename))
      
-    member this.AddContributor (publicName: string) : string option =
+    member this.AddContributor (publicName: string) : Choice<ContributorInfoPublic, string> =
         match (this.ContributorExists(publicName), this.ContributorPrivateFileExists(publicName)) with
         | (false, false) -> 
             // generate key pair
@@ -226,12 +273,13 @@ type RHoursData =
             let jsonBytes = GetJsonBytes json
             let privateInfoHash = CryptoProvider.Hash(jsonBytes)
 
-            this.Contributors <- { ContributorInfoPublic.PublicName = publicName; PublicKey = publicKey; PrivateInfoHash = privateInfoHash; } :: (this.Contributors)
-            None
+            let publicInfo = { ContributorInfoPublic.PublicName = publicName; PublicKey = publicKey; PrivateInfoHash = privateInfoHash; }
+            this.Contributors <- publicInfo :: (this.Contributors)
+            Choice1Of2(publicInfo)
         | (true, _) ->
-            Some(sprintf "A contributor with the name '%s' already exists." publicName)
+            Choice2Of2(sprintf "A contributor with the name '%s' already exists." publicName)
         | (_, true) ->
-            Some("A contributor private file already exists.")
+            Choice2Of2("A contributor private file already exists.")
 
     member this.GetContributor (publicName: string) : ContributorInfoPublic =
         (this.Contributors) |> List.find (fun x -> x.PublicName = publicName)
@@ -250,58 +298,52 @@ type RHoursData =
             Some(sprintf "No contributor with name '%s' exists." name)
 
     member this.DeleteContributor (publicName: string) : string option =
-        match this.ContributorExists(publicName) with
-        | true -> 
+        match (this.ContributorExists(publicName), this.ContributorHasContributions(publicName)) with
+        | (true, false) -> 
             this.Contributors <- (this.Contributors) |> List.filter (fun x -> x.PublicName <> publicName)
             None
-        | false ->
+        | (false, _) ->
             Some(sprintf "No contributor with name '%s' exists." publicName)
+        | (_, true) ->
+            Some(sprintf "The contributor with name '%s' has contributions and cannot be deleted." publicName)
 
-    member this.AddContributionSpan (projectId: string, contributorId: string, startDate: DateTime, endDate: DateTime) : string option =
+    member this.AddAgreement (project: Project, contributor: ContributorInfoPublic) : CompensationAgreement = 
+        // Create a new InvoiceId
+        // Create an Agreement with empty keys and hashes
+        let invoiceId = CryptoProvider.RandomId()
+        let agreement = 
+            {
+                Proposal = 
+                    {
+                        Invoice = 
+                            {
+                                InvoiceId = invoiceId;
+                                Project = project;
+                                Contributor = contributor;
+                                ContributionSpans = [];
+                            };
+                        InvoiceHash = [| |];
+                        ContributorSignature = [| |];
+                        ContributorPublicKey = String.Empty;
+                    };
+                ProposalHash = [| |];
+                AcceptorSignature = [| |];
+                AcceptorPublicKey = String.Empty;
+            }
+        this.CompensationAgreements <- agreement :: (this.CompensationAgreements)
+        agreement
+
+    member this.AddSpan(agreement: CompensationAgreement, startDate: DateTime, endDate: DateTime, utcOffset: float) : Choice<ContributionSpan, string> =
         if startDate > endDate then
-            Some("The start date of a contribution be before its end date.")
+            Choice2Of2("The start date of a contribution be before its end date.")
         else
-            if this.ProjectExists(projectId) then
-                if this.ContributorExists(contributorId) then
-                    let span = 
-                        {
-                            ProjectId = projectId;
-                            ContributorId = contributorId;
-                            StartDate = startDate;
-                            EndDate = endDate;
-                            UtcOffset = 0.0;
-                            Contributions = [];
-                        }
-
-                    this.ContributionSpans <- span :: (this.ContributionSpans)
-                    None
-                else
-                    Some(sprintf "No contributor with id '%s' exists." contributorId)
-            else
-                Some(sprintf "No project with id '%s' exists." projectId)
-
-    member this.GetContribution (projectId: string, contributorId: string, contributionId: string) : ContributionSpan * Contribution =
-        let resultOption = 
-            (this.ContributionSpans) |> 
-            List.tryPick (
-                fun x -> 
-                    match (x.Contributions) |> List.tryFind (fun y -> y.Id = contributionId) with
-                    | Some(c) -> Some(x, c)
-                    | None -> None
-                )
-        match resultOption with
-        | Some(result) -> result
-        | None -> failwith "Unable to find contribution"
-
-    member this.CreateCompensationInvoice (projectId: string, contributorId: string, contributionId: string) : CompensationInvoice = 
-        let project = this.GetProject(projectId)
-        let contributor = this.GetContributor(contributorId)
-        let (span, contribution) = this.GetContribution(projectId, contributorId, contributionId)
-        {
-            Project = project;
-            Contributor = contributor;
-            StartDate = span.StartDate;
-            EndDate = span.EndDate;
-            UtcOffset = span.UtcOffset;
-            Contributions = [ contribution; ]
-        }
+            let span = 
+                {
+                    StartDate = startDate;
+                    EndDate = endDate;
+                    UtcOffset = utcOffset;
+                    Contributions = [];
+                }
+            
+            agreement.Proposal.Invoice.ContributionSpans <- span :: (agreement.Proposal.Invoice.ContributionSpans)
+            Choice1Of2(span)
