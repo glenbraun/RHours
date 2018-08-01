@@ -8,6 +8,8 @@ open RHours.Crypto
 open Json
 open JsonSerialization
 
+let mutable DoSave = true
+
 type Project =
     {
         Id: string;
@@ -52,13 +54,13 @@ type CashWithCompoundedInterestAndMaxTerm =
     }
 
 type CompensationTerm =
-    | HourlyWithCompoundedInterestAndMaxTerm of HourlyWithCompoundedInterestAndMaxTerm
-    | CashWithCompoundedInterestAndMaxTerm of CashWithCompoundedInterestAndMaxTerm
+    | HourlyWithCompoundedInterestAndMaxTerm of HourlyWithCompoundedInterestAndMaxTerm  // "hourly"
+    | CashWithCompoundedInterestAndMaxTerm of CashWithCompoundedInterestAndMaxTerm      // "cash"
 
 type Contribution =
     {
         Terms: CompensationTerm;
-        Claims: string list;
+        mutable Claims: string list;
     }
 
 type ContributionSpan =
@@ -66,7 +68,7 @@ type ContributionSpan =
         StartDate: DateTime;
         EndDate: DateTime;
         UtcOffset: float;
-        Contributions: Contribution list;
+        mutable Contributions: Contribution list;
     }
 
 type CompensationInvoice =
@@ -152,7 +154,7 @@ type RHoursData =
         mutable InvoiceEvents : IvoiceEvent list;
     } with
 
-    member this.Initialize(config: RHoursConfig) =
+    member this.Initialize(rhoursConfig: RHoursConfig option) =
         // Create the public folder if it doesn't exist
         // Create the private folder if it doesn't exist
         // Parse and desrialize the data in the rhours.json file if it exists
@@ -160,14 +162,26 @@ type RHoursData =
         //      This will create it if it didn't exist before
         //      Also saves it in the standard format if it wasn't before
 
-        this.Config <- config
-        if not(config.PublicFolder.Exists) then
-            config.PublicFolder.Create()        
+        match rhoursConfig with
+        | Some(config) -> 
+            this.Config <- config
+        | None ->
+            let curdir = DirectoryInfo(Directory.GetCurrentDirectory())
+            let privatedir = DirectoryInfo(Path.Combine(curdir.Parent.FullName, sprintf "%s_private" (curdir.Name)))
 
-        if not(config.PrivateFolder.Exists) then
-            config.PrivateFolder.Create()
+            this.Config <-
+                {
+                    PublicFolder = curdir;
+                    PrivateFolder = privatedir;
+                }
+
+        if not(this.Config.PublicFolder.Exists) then
+            this.Config.PublicFolder.Create()        
+
+        if not(this.Config.PrivateFolder.Exists) then
+            this.Config.PrivateFolder.Create()
         
-        let files = config.PublicFolder.GetFiles("rhours.json")
+        let files = this.Config.PublicFolder.GetFiles("rhours.json")
         if files.Length = 1 then
             let fileJson = ParseJsonFromFile (files.[0].FullName)
             let fileData = JsonSerialization.Deserialize<RHoursData> fileJson
@@ -180,8 +194,9 @@ type RHoursData =
 
     member this.Save() =
         let json = Serialize this
-        use rhoursFile = File.CreateText(Path.Combine(this.Config.PublicFolder.FullName, "rhours.json"))
-        WriteJsonIndented rhoursFile json
+        if DoSave then
+            use rhoursFile = File.CreateText(Path.Combine(this.Config.PublicFolder.FullName, "rhours.json"))
+            WriteJsonIndented rhoursFile json
         
     member this.ProjectExists(id: string) = 
         (this.Projects) |> List.exists (fun x -> x.Id = id)
@@ -189,18 +204,25 @@ type RHoursData =
     member this.ContributorExists(publicName: string) = 
         (this.Contributors) |> List.exists (fun x -> x.PublicName = publicName)
 
+    member this.InvoiceExists(invoiceId: string) =
+        this.CompensationAgreements 
+            |> List.exists (
+                fun a ->
+                    a.Proposal.Invoice.InvoiceId = invoiceId
+                )
+
     member this.ContributorHasContributions(publicName: string) =
         this.CompensationAgreements 
             |> List.exists ( 
-                    fun a -> 
-                        a.Proposal.Invoice.Contributor.PublicName = publicName
+                fun a -> 
+                    a.Proposal.Invoice.Contributor.PublicName = publicName
                 )
 
     member this.ProjectHasContributions(projectId: string) =
         this.CompensationAgreements
             |> List.exists ( 
-                    fun a ->
-                        a.Proposal.Invoice.Project.Id = projectId
+                fun a ->
+                    a.Proposal.Invoice.Project.Id = projectId
                 )
     
     member this.AddProject (id: string, name: string) : Choice<Project, string> =
@@ -332,7 +354,10 @@ type RHoursData =
             }
         this.CompensationAgreements <- agreement :: (this.CompensationAgreements)
         agreement
-
+    
+    member this.GetAgreement(invoiceId: string) =
+        (this.CompensationAgreements) |> List.find (fun x -> x.Proposal.Invoice.InvoiceId = invoiceId)
+    
     member this.AddSpan(agreement: CompensationAgreement, startDate: DateTime, endDate: DateTime, utcOffset: float) : Choice<ContributionSpan, string> =
         if startDate > endDate then
             Choice2Of2("The start date of a contribution be before its end date.")
@@ -347,3 +372,52 @@ type RHoursData =
             
             agreement.Proposal.Invoice.ContributionSpans <- span :: (agreement.Proposal.Invoice.ContributionSpans)
             Choice1Of2(span)
+
+    member this.AddContribution(span: ContributionSpan, terms: CompensationTerm) : Contribution =
+        let contribution = 
+            {
+                Terms = terms;
+                Claims = [];
+            }
+        span.Contributions <- contribution :: (span.Contributions)
+        contribution
+
+    member this.AddClaims(contribution: Contribution, claim: string) =
+        contribution.Claims <- claim :: (contribution.Claims)
+
+    member this.CreateHourlyWithCompoundedInterestAndMaxTerm(hours: decimal, rate: decimal, token: string, interest: decimal, maxmult: decimal) : Choice<HourlyWithCompoundedInterestAndMaxTerm, string> =
+        if hours <= 0m then
+            Choice2Of2("Hours must be greater than zero.")
+        elif rate <= 0m then
+            Choice2Of2("Rate must be greater than zero.")
+        elif interest <= 0m then
+            Choice2Of2("Interest must be greater than zero.")
+        elif maxmult <= 1m then
+            Choice2Of2("Max Multiplier must be greater than one.")
+        else
+            let term = 
+                {
+                    Hours = hours;
+                    HourlyRate = rate;
+                    Token = token;
+                    Interest = interest;
+                    MaxMultiplier = maxmult;
+                }
+            Choice1Of2(term)
+
+    member this.CreateCashWithCompoundedInterestAndMaxTerm(amount: decimal, token: string, interest: decimal, maxmult: decimal) : Choice<CashWithCompoundedInterestAndMaxTerm, string> =
+        if amount <= 0m then
+            Choice2Of2("Amount must be greater than zero.")
+        elif interest <= 0m then
+            Choice2Of2("Interest must be greater than zero.")
+        elif maxmult <= 1m then
+            Choice2Of2("Max Multiplier must be greater than one.")
+        else
+            let term =
+                {
+                    Amount = amount;
+                    Token = token;
+                    Interest = interest;
+                    MaxMultiplier = maxmult;
+                }
+            Choice1Of2(term)
