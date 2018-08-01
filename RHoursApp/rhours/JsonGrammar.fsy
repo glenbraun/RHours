@@ -60,6 +60,7 @@ JsonArray:
     | SYM_LBRACKET JsonElements SYM_RBRACKET    { Array.ofList $2 }
 
 JsonElements:
+    |                                           { [ ] }
     | JsonValue                                 { [ $1 ] }
     | JsonValue SYM_COMMA JsonElements          { $1 :: $3 }
 
